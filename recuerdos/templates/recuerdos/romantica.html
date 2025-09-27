@@ -1,0 +1,333 @@
+{% extends 'recuerdos/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+
+{% block title %}Página Romántica{% endblock %}
+
+{% block content %}
+
+<div class="galeria-polaroid">
+
+  <div class="fila-polaroid">
+    {% for recuerdo in recuerdos|slice:":4" %}
+    <div class="polaroid"
+     style="--random: {{ forloop.counter0|add:0.1|floatformat:2 }}"
+     data-url="{% url 'detalle_recuerdo' recuerdo.pk %}"
+     onclick="window.location.href=this.dataset.url">
+
+      <div class="cordel"></div>
+      <div class="clip-emoji">📎</div>
+      <div class="img-container">
+        <img src="{{ recuerdo.imagen.url }}" alt="{{ recuerdo.titulo }}" />
+      </div>
+      <img src="{% static 'img/pochacco12.png' %}" alt="sticker corazón" class="sticker" />
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="fila-polaroid">
+    {% for recuerdo in recuerdos|slice:"4:10" %}
+    <div class="polaroid"
+     style="--random: {{ forloop.counter0|add:0.1|floatformat:2 }}"
+     data-url="{% url 'detalle_recuerdo' recuerdo.pk %}"
+     onclick="window.location.href=this.dataset.url">
+
+      <div class="cordel"></div>
+      <div class="clip-emoji">📎</div>
+      <div class="img-container">
+        <img src="{{ recuerdo.imagen.url }}" alt="{{ recuerdo.titulo }}" />
+      </div>
+      <img src="{% static 'img/pochacco12.png' %}" alt="sticker corazón" class="sticker" />
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="floating-sunflowers"></div>
+</div>
+
+<div class="romantic-container">
+  <div class="heart-bg"></div>
+  <div class="carta">
+    <h2>Para el amor de mi vida ❤️</h2>
+    <p>{% if mensaje %}{{ mensaje|linebreaks }}{% else %}Mi amor, quiero que sepas cuánto te amo, cuanto te deseo, Eres
+      mi  reina, mi princesa, mi niña. Cada segundo a tu lado lo logro disfrutar, eres mi todo, el amor de mi vida, siempre
+      soñé con estar con alguien como tú, y ahora veo tantos recuerdos a tu lado que me hacen ser un  hombre feliz y agradecido
+      con lo que Dios me regaló, esta página es un recordatorio de lo que hemos vivido y lo que nos queda por mi vivir,
+      pero que sepas que ni 30 mil líneas de código me alcanzan para expresarte cuanto Te amo. ❤️{% endif %}</p>
+    <a href="{% url 'lista_recuerdos' %}" class="btn-volver">Volver a los recuerdos</a>
+  </div>
+  <div class="stars"></div>
+</div>
+<div class="corazones"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>"Cada día contigo es un nuevo recuerdo eterno"</h1>
+  <img src="{% static 'img/eso_duele.png' %}" alt="Nosotros" class="hero-img">
+</section>
+
+<!-- TIMELINE -->
+<section class="timeline">
+  <h2 data-aos="fade-up">Nuestra Historia</h2>
+    <ul>
+    {% for recuerdo in recuerdos|slice:":3" %}
+        <li>
+        <strong>{{ recuerdo.fecha|date:"d M Y" }}:</strong> {{ recuerdo.titulo }}
+        </li>
+    {% empty %}
+        <li>No hay recuerdos por mostrar.</li>
+    {% endfor %}
+    </ul>
+</section>
+<br>
+<section class="love-calendar" data-aos="fade-up">
+  <h2>📅 Calendario de Amor</h2>
+  <div class="calendar-grid">
+    {% for dia in dias_del_mes %}
+      {% if dia in dias_con_recuerdo %}
+        {# Link al primer recuerdo del día #}
+        {% with primer_recuerdo=recuerdos_por_dia|get_item:dia|first %}
+          <a href="{% url 'detalle_recuerdo' primer_recuerdo.id %}" class="day has-memory" data-dia="{{ dia }}">
+            {{ dia }}
+            <span class="heart">❤️</span>
+            <div class="tooltip">
+              {% for recuerdo in recuerdos_por_dia|get_item:dia %}
+                <div class="tooltip-item">
+                  <strong>{{ recuerdo.titulo }}</strong><br>
+                  {{ recuerdo.descripcion|truncatechars:50 }}
+                </div>
+              {% endfor %}
+            </div>
+          </a>
+        {% endwith %}
+      {% else %}
+        <div class="day" data-dia="{{ dia }}">
+          {{ dia }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+
+
+
+<!-- CITA ROMÁNTICA -->
+<div id="cita-romantica" class="typewriter"></div>
+
+<!-- GALERÍA INTERACTIVA -->
+<section class="galeria">
+  <h2>Galería de Recuerdos</h2>
+  <div class="galeria">
+    {% for r in recuerdos|slice:":6" %}
+      <a href="{% url 'detalle_recuerdo' r.id %}" class="foto-link">
+        <div class="foto-con-modal">
+          <img src="{{ r.imagen.url }}" alt="{{ r.titulo }}" class="imagen-recuerdo" />
+          <div class="hover-modal">
+            <h4>{{ r.titulo }}</h4>
+            <p>{{ r.descripcion|truncatewords:20 }}</p>
+            <small>{{ r.fecha }}</small>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Modal con efecto desplegable -->
+<div id="modal" class="modal">
+  <div class="modal-content modal-animacion">
+    <span class="cerrar">&times;</span>
+    <img id="modal-img" src="" alt="">
+    <h3 id="modal-titulo"></h3>
+    <p id="modal-fecha"></p>
+    <p id="modal-desc"></p>
+  </div>
+</div>
+
+<!-- CARTA REALISTA ANIMADA -->
+<div class="carta-romantica" onclick="this.classList.toggle('abierta')">
+  <div class="carta-frente">
+    <p>💌 Haz clic para abrir</p>
+  </div>
+  <div class="carta-dentro">
+    <p>Desde que llegaste, mi mundo es más bonito. Te amo. ❤️</p>
+  <!-- Aquí va tu mensaje dinámico -->
+  </div>
+</div>
+
+<!-- LLUVIA DE PÉTALOS -->
+<div class="petalos"></div>
+
+<!-- SCRIPTS -->
+<script>
+// Modo noche romántico
+function toggleNoche() {
+  document.body.classList.toggle("modo-noche");
+  document.querySelectorAll('.carta, .sobre, .btn-volver').forEach(el => {
+    el.classList.toggle("noche");
+  });
+}
+
+
+// Citas románticas con efecto escribir
+const citas = [
+  "El amor no se mira, se siente. — Pablo Neruda",
+  "Eres mi lugar favorito al que quiero volver.",
+  "Contigo, todo es mejor."
+];
+let i = 0, j = 0, current = '', isDeleting = false;
+const el = document.getElementById("cita-romantica");
+function type() {
+  if (i >= citas.length) i = 0;
+  current = citas[i];
+  el.innerHTML = isDeleting ? current.substring(0, j--) : current.substring(0, j++);
+  if (!isDeleting && j === current.length) {
+    isDeleting = true;
+    setTimeout(type, 1500);
+  } else if (isDeleting && j === 0) {
+    isDeleting = false;
+    i++;
+    setTimeout(type, 500);
+  } else {
+    setTimeout(type, isDeleting ? 50 : 100);
+  }
+}
+type();
+
+// Lluvia de pétalos
+const petalos = document.querySelector(".petalos");
+for (let i = 0; i < 30; i++) {
+  const petalo = document.createElement("div");
+  petalo.className = "petalo";
+  petalo.style.left = Math.random() * 100 + "vw";
+  petalo.style.animationDuration = 3 + Math.random() * 5 + "s";
+  petalos.appendChild(petalo);
+}
+</script>
+
+<script>
+document.querySelectorAll('.recuerdo-img').forEach(img => {
+  img.addEventListener('click', function() {
+    document.getElementById("modal-img").src = this.dataset.imagen;
+    document.getElementById("modal-titulo").innerText = this.dataset.titulo;
+    document.getElementById("modal-fecha").innerText = this.dataset.fecha;
+    document.getElementById("modal-desc").innerText = this.dataset.descripcion;
+    document.getElementById("modal").style.display = "flex";
+  });
+});
+document.querySelector('.cerrar').onclick = function() {
+  document.getElementById("modal").style.display = "none";
+};
+</script>
+
+<script>
+  window.addEventListener('click', function(e) {
+    const modal = document.getElementById("modal");
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+</script>
+
+<script>
+    document.addEventListener('click', function(e) {
+  const carta = document.querySelector('.sobre-corazon');
+  if (!carta.contains(e.target)) {
+    carta.classList.remove('abierta');
+  }
+});
+</script>
+
+<!-- Aquí en el template, justo antes del script -->
+
+<script>
+  // Convertimos la cadena JSON a objeto JS de forma segura
+  const recuerdosPorDia = JSON.parse('{{ recuerdos_por_dia_json|escapejs }}');
+
+  const modal = document.getElementById('modal');
+  const modalClose = document.getElementById('modal-close');
+  const modalDia = document.getElementById('modal-dia');
+  const modalList = document.getElementById('modal-list');
+
+  document.querySelectorAll('.calendar-grid .day.has-memory').forEach(dayElem => {
+    dayElem.addEventListener('click', () => {
+      const dia = dayElem.getAttribute('data-dia');
+      modalDia.textContent = dia;
+      modalList.innerHTML = '';
+      if (recuerdosPorDia[dia]) {
+        recuerdosPorDia[dia].forEach(r => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${r.titulo}</strong><br>${r.descripcion}`;
+          modalList.appendChild(li);
+        });
+      } else {
+        modalList.innerHTML = '<li>No hay recuerdos para este día.</li>';
+      }
+      modal.style.display = 'flex';
+    });
+  });
+
+  modalClose.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+</script>
+
+<script>
+  // Modal funcionalidad
+  function openModalPolaroid(imgElem) {
+    const modal = document.getElementById('modal-polaroid');
+    const modalImg = document.getElementById('modalImgPolaroid');
+    modalImg.src = imgElem.src;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModalPolaroid(event) {
+    if(event.target.id === 'modal-polaroid' || event.target.id === 'modalImgPolaroid'){
+      const modal = document.getElementById('modal-polaroid');
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  // Poner stickers Pochacco en posiciones aleatorias dentro de la polaroid
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.polaroid').forEach(polaroid => {
+      const sticker = polaroid.querySelector('.sticker');
+      if (sticker) {
+        // Posiciones random dentro del cuadro pero sin salir
+        const maxX = polaroid.clientWidth - sticker.clientWidth - 10;
+        const maxY = polaroid.clientHeight - sticker.clientHeight - 10;
+        const randX = Math.floor(Math.random() * maxX) + 5;
+        const randY = Math.floor(Math.random() * maxY) + 5;
+        sticker.style.left = randX + 'px';
+        sticker.style.top = randY + 'px';
+      }
+    });
+  });
+
+  // Crear emojis girasol flotantes en la galería
+  window.addEventListener('load', () => {
+    const container = document.querySelector('.floating-sunflowers');
+    if (!container) return;
+    const cantidad = 8;
+
+    for(let i=0; i<cantidad; i++) {
+      const girasol = document.createElement('div');
+      girasol.classList.add('floating-sunflower');
+      girasol.textContent = '🌻';
+      girasol.style.left = (Math.random() * 100) + '%';
+      girasol.style.top = (Math.random() * 100) + '%';
+      girasol.style.animationDuration = (4 + Math.random() * 3) + 's';
+      girasol.style.animationDelay = (Math.random() * 4) + 's';
+      container.appendChild(girasol);
+    }
+  });
+</script>
+{% endblock %}

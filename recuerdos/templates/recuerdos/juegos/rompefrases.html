@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rompefrases</title>
+</head>
+<body>
+<h2 class="titulo-romantico text-center my-4">Rompefrases 💌</h2>
+
+<div class="container text-center">
+  <p id="instrucciones">Arma la frase romántica tocando las palabras en orden 🩷</p>
+
+  <div id="palabras-desordenadas" class="frase-desordenada mb-4"></div>
+  <div id="frase-armada" class="frase-armada"></div>
+
+  <div class="botones-rompefrase mt-3">
+    <button id="verificarBtn" class="btn-romantico">Verificar</button>
+    <button id="reiniciarBtn" class="btn-romantico">Reiniciar Frase</button>
+    <button id="siguienteBtn" class="btn-romantico" style="display: none;">Siguiente Frase</button>
+  </div>
+
+  <div id="mensaje" class="mensaje-romantico mt-3"></div>
+</div>
+
+<script>
+    const frases = [
+    "Desde que llegaste mi mundo tiene más color, más luz y más amor",
+    "Eres la razón por la que sonrío incluso en los días más grises",
+    "A tu lado el tiempo se detiene y mi alma se siente en casa",
+    "Cada beso tuyo es una promesa silenciosa de amor eterno",
+    "No necesito nada más si tengo tu mano entrelazada con la mía",
+    "Tu amor es la melodía que le da ritmo a mi corazón",
+    "Cuando me miras, siento que todo en el universo tiene sentido",
+    "Si pudiera elegir de nuevo, te volvería a elegir una y mil veces",
+    "Amarte es la aventura más hermosa que he vivido en mi vida",
+    "Nuestro amor es un lazo sagrado que ni el tiempo podrá romper"
+    ];
+
+  let fraseActual = 0;
+  let seleccionadas = [];
+
+  const desordenadasDiv = document.getElementById('palabras-desordenadas');
+  const armadaDiv = document.getElementById('frase-armada');
+  const mensajeDiv = document.getElementById('mensaje');
+  const siguienteBtn = document.getElementById('siguienteBtn');
+  const reiniciarBtn = document.getElementById('reiniciarBtn');
+
+  function cargarFrase() {
+    const frase = frases[fraseActual];
+    const palabras = frase.split(' ');
+    seleccionadas = [];
+    armadaDiv.innerHTML = '';
+    mensajeDiv.textContent = '';
+    siguienteBtn.style.display = 'none';
+
+    // Mezclar palabras
+    const desordenadas = [...palabras].sort(() => Math.random() - 0.5);
+    desordenadasDiv.innerHTML = '';
+    desordenadas.forEach(palabra => {
+      const span = document.createElement('span');
+      span.textContent = palabra;
+      span.classList.add('palabra-romantica');
+      span.addEventListener('click', () => seleccionarPalabra(span, palabra));
+      desordenadasDiv.appendChild(span);
+    });
+  }
+
+    function seleccionarPalabra(span, palabra) {
+    if (span.classList.contains('seleccionada')) return;
+    span.classList.add('seleccionada');
+    span.style.textDecoration = 'line-through';  // <-- Aquí el tachado
+    seleccionadas.push(palabra);
+    const nueva = document.createElement('span');
+    nueva.textContent = palabra;
+    nueva.classList.add('palabra-armada');
+    armadaDiv.appendChild(nueva);
+    }
+
+  document.getElementById('verificarBtn').addEventListener('click', () => {
+    const original = frases[fraseActual];
+    const armada = seleccionadas.join(' ');
+    if (armada === original) {
+      mensajeDiv.textContent = '¡Perfecto, mi amor! 💖';
+      siguienteBtn.style.display = 'inline-block';
+    } else {
+      mensajeDiv.textContent = 'Ups... prueba de nuevo 🥺';
+    }
+  });
+
+  siguienteBtn.addEventListener('click', () => {
+    fraseActual = (fraseActual + 1) % frases.length;
+    cargarFrase();
+  });
+
+  reiniciarBtn.addEventListener('click', () => {
+    cargarFrase();  // recarga la misma frase
+  });
+
+  window.onload = cargarFrase;
+</script>
+
+<style>
+  .frase-desordenada span {
+    background: #ffe6ef;
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin: 5px;
+    display: inline-block;
+    cursor: pointer;
+    font-weight: bold;
+    color: #d81b60;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+  }
+
+  .frase-desordenada span:hover {
+    transform: scale(1.1);
+  }
+
+  .palabra-armada {
+    background: #f8bbd0;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 10px;
+    display: inline-block;
+    color: white;
+    font-weight: bold;
+    background: linear-gradient(45deg, #f06292, #ec407a);
+  }
+
+  .mensaje-romantico {
+    font-size: 1.3rem;
+    color: #d81b60;
+    font-weight: bold;
+  }
+
+  .btn-romantico {
+    background-color: #f06292;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 0 5px;
+  }
+
+  .btn-romantico:hover {
+    background-color: #ec407a;
+  }
+
+  .titulo-romantico {
+    color: #d81b60;
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+  }
+
+  .botones-rompefrase {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .palabra-romantica.seleccionada {
+  text-decoration: line-through;
+  color: #a0486a; /* tono más tenue para el texto tachado */
+  cursor: default;
+}
+
+</style>
+
+</body>
+</html>

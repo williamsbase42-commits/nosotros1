@@ -1,0 +1,11 @@
+<h2>Panel de Recuerdos</h2>
+<a href="{% url 'subir_musica' %}">🎵 Subir Música</a>
+
+<ul>
+  {% for recuerdo in recuerdos %}
+    <li>
+      <strong>{{ recuerdo.nombre }}</strong> ({{ recuerdo.fecha }})
+      <p>{{ recuerdo.descripcion }}</p>
+    </li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,19 @@
+{% extends 'recuerdos/base.html' %}
+
+{% block title %}Editar Recuerdo{% endblock %}
+
+{% block content %}
+  <h2>Editar: {{ recuerdo.titulo }}</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <!-- Mapa Interactivo -->
+  <label>Ubicación:</label>
+  <div id="mapa" style="height: 400px; margin-bottom: 10px;"></div>
+  
+  <!-- Campos ocultos para lat y lng -->
+  <input type="hidden" id="id_latitud" name="latitud" value="{{ form.latitud.value }}">
+  <input type="hidden" id="id_longitud" name="longitud" value="{{ form.longitud.value }}">
+    <button type="submit">Guardar Cambios</button>
+  </form>
+{% endblock %}

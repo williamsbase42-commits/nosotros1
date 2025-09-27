@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <section class="cupones">
+  <h2>🎁 Gira la ruleta de cupones</h2>
+  <div class="ruleta-container">
+    <div id="ruleta" class="ruleta">
+      <div class="puntero">🔻</div>
+      <div class="girar">Girar</div>
+    </div>
+  </div>
+  <div id="ticket-premio" class="ticket oculto">
+    <h3>🎫 Cupón Romántico</h3>
+    <p id="texto-premio"></p>
+    <button onclick="cerrarTicket()">Cerrar</button>
+  </div>
+
+  <div id="ticket-premio" class="ticket oculto">
+  <div style="height: 6px; background: repeating-linear-gradient(45deg, #ff69b4, #ff69b4 4px, transparent 4px, transparent 8px); border-top-left-radius: 10px; border-top-right-radius: 10px;"></div>
+  <h3>🎫 Cupón Romántico</h3>
+  <p id="texto-premio"></p>
+  <button onclick="cerrarTicket()">Cerrar</button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+  const ruleta = document.getElementById('ruleta');
+  const ticket = document.getElementById('ticket-premio');
+  const textoPremio = document.getElementById('texto-premio');
+
+  const premios = [
+    '💋 1 Besito donde quieras',
+    '💌 Cena romántica casera',
+    '🛏️ Una noche de mimos sin interrupciones',
+    '🎥 Maratón de pelis elegidas por ti',
+    '🧸 1 día entero de cariños',
+    '🧁 Postre hecho con amor'
+  ];
+
+  let girando = false;
+
+  ruleta.addEventListener('click', () => {
+    if (girando) return;
+    girando = true;
+
+    const giros = 5; // vueltas completas
+    const premioIndex = Math.floor(Math.random() * premios.length);
+    const anguloFinal = 360 * giros + (360 / premios.length) * premioIndex + (360 / premios.length) / 2;
+
+    ruleta.style.transform = `rotate(${anguloFinal}deg)`;
+
+    setTimeout(() => {
+      textoPremio.textContent = premios[premioIndex];
+      ticket.classList.remove('oculto');
+      girando = false;
+    }, 4000); // tiempo igual a la transición de la ruleta
+  });
+});
+
+function cerrarTicket() {
+  document.getElementById('ticket-premio').classList.add('oculto');
+}
+</script>
+</body>
+</html>

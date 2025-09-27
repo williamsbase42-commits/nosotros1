@@ -1,0 +1,109 @@
+{% extends 'recuerdos/base.html' %}
+
+{% block title %}{{ recuerdo.titulo }}{% endblock %}
+
+{% block content %}
+<div class="detalle-recuerdo">
+  <h2 class="titulo">{{ recuerdo.titulo }}</h2>
+
+  {% if recuerdo.imagen %}
+    <img src="{{ recuerdo.imagen.url }}" alt="{{ recuerdo.titulo }}" class="imagen">
+  {% endif %}
+
+  <p><strong>📅 Fecha:</strong> {{ recuerdo.fecha }}</p>
+
+  {% if recuerdo.categoria %}
+    <p><strong>🏷️ Categoría:</strong> {{ recuerdo.categoria.nombre }}</p>
+  {% endif %}
+
+  <p><strong>📝 Descripción:</strong> {{ recuerdo.descripcion }}</p>
+
+  {% if recuerdo.latitud and recuerdo.longitud %}
+    <div id="mapa" class="mapa"></div>
+  {% endif %}
+
+  <div class="acciones">
+    <a href="{% url 'editar_recuerdo' recuerdo.id %}" class="btn">✏️ Editar</a>
+    <a href="{% url 'eliminar_recuerdo' recuerdo.id %}" class="btn">🗑️ Eliminar</a>
+    <a href="{% url 'lista_recuerdos' %}" class="btn">🔙 Volver a recuerdos</a>
+    <a href="{% url 'recuerdos_favoritos' %}" class="btn">💖 Ir a Favoritos</a>
+  </div>
+</div>
+
+<style>
+  .detalle-recuerdo {
+    max-width: 700px;
+    margin: auto;
+    padding: 30px;
+    border-radius: 20px;
+    background: #fff0f6;
+    box-shadow: 0 8px 16px rgba(255, 100, 150, 0.2);
+    animation: fadeIn 0.8s ease;
+  }
+
+  .titulo {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #d6336c;
+  }
+
+  .imagen {
+    display: block;
+    margin: auto;
+    max-width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+
+  .mapa {
+    height: 300px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  .acciones {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    background: #ff80ab;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+
+  .btn:hover {
+    background: #ff4d88;
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+</style>
+
+<!-- Leaflet solo si hay ubicación 
+{% if recuerdo.latitud and recuerdo.longitud %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const map = L.map("mapa").setView([{{ recuerdo.latitud }}, {{ recuerdo.longitud }}], 13);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+      }).addTo(map);
+      L.marker([{{ recuerdo.latitud }}, {{ recuerdo.longitud }}]).addTo(map)
+        .bindPopup("Ubicación del recuerdo").openPopup();
+    });
+  </script>-->
+{% endif %}
+{% endblock %}

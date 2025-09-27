@@ -1,0 +1,135 @@
+{% extends 'recuerdos/base.html' %}
+
+{% block title %}Agregar Recuerdo{% endblock %}
+
+{% block content %}
+  <h2>Nuevo recuerdo</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Campo para buscar ubicación -->
+    <label for="buscador_ubicacion"><strong>Buscar ubicación:</strong></label>
+    <input type="text" id="buscador_ubicacion" placeholder="Ej: París, Torre Eiffel, Viña del Mar..." style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc;">
+
+    <!-- Mapa interactivo -->
+    <div id="mapa" style="height: 350px; border-radius: 10px; box-shadow: 0 6px 12px rgba(240, 128, 176, 0.5); margin-bottom: 20px;"></div>
+
+<!-- Sin inputs duplicados -->
+<!-- Solo actualiza los del form -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const latInput = document.querySelector("input[name='latitud']");
+  const lngInput = document.querySelector("input[name='longitud']");
+  const buscador = document.getElementById("buscador_ubicacion");
+
+  let defaultLat = latInput.value || -33.4489;
+  let defaultLng = lngInput.value || -70.6693;
+
+  const map = L.map("mapa").setView([defaultLat, defaultLng], 13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+  }).addTo(map);
+
+  let marker;
+  if (latInput.value && lngInput.value) {
+    marker = L.marker([defaultLat, defaultLng]).addTo(map);
+  }
+
+  function buscarUbicacion(query) {
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const loc = data[0];
+          const lat = parseFloat(loc.lat);
+          const lon = parseFloat(loc.lon);
+
+          if (marker) {
+            marker.setLatLng([lat, lon]);
+          } else {
+            marker = L.marker([lat, lon]).addTo(map);
+          }
+
+          map.setView([lat, lon], 15);
+          latInput.value = lat.toFixed(6);
+          lngInput.value = lon.toFixed(6);
+        } else {
+          alert("No se encontró la ubicación.");
+        }
+      })
+      .catch(() => alert("Error buscando la ubicación."));
+  }
+
+  buscador.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      buscarUbicacion(buscador.value);
+    }
+  });
+});
+</script>
+
+
+    <button type="submit" class="btn btn-primary">Guardar Recuerdo 💖</button>
+  </form>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+  <!-- Script para búsqueda de ubicación -->
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const latInput = document.getElementById("id_latitud");
+    const lngInput = document.getElementById("id_longitud");
+    const buscador = document.getElementById("buscador_ubicacion");
+
+    let defaultLat = latInput.value || -33.4489;  // Santiago
+    let defaultLng = lngInput.value || -70.6693;
+
+    const map = L.map("mapa").setView([defaultLat, defaultLng], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+    }).addTo(map);
+
+    let marker;
+    if(latInput.value && lngInput.value) {
+      marker = L.marker([defaultLat, defaultLng]).addTo(map);
+    }
+
+    // Función para buscar ubicación
+    function buscarUbicacion(query) {
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          if(data && data.length > 0){
+            const loc = data[0];
+            const lat = parseFloat(loc.lat);
+            const lon = parseFloat(loc.lon);
+
+            if(marker){
+              marker.setLatLng([lat, lon]);
+            } else {
+              marker = L.marker([lat, lon]).addTo(map);
+            }
+
+            map.setView([lat, lon], 15);
+            latInput.value = lat.toFixed(6);
+            lngInput.value = lon.toFixed(6);
+          } else {
+            alert("No se encontró la ubicación.");
+          }
+        })
+        .catch(() => alert("Error buscando la ubicación."));
+    }
+
+    buscador.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        e.preventDefault();
+        buscarUbicacion(buscador.value);
+      }
+    });
+  });
+  </script>
+{% endblock %}

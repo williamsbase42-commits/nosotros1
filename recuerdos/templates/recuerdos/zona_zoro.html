@@ -1,0 +1,179 @@
+{% extends 'recuerdos/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="zona-zoro">
+  <h1>Zona Zoro 🗡️</h1>
+
+  <div class="zoro-galeria">
+    <img src="{% static 'img/zoro1.gif' %}" alt="Zoro 1">
+    <img src="{% static 'img/zoro2.gif' %}" alt="Zoro 2">
+    <img src="{% static 'img/zoro3.gif' %}" alt="Zoro 3">
+  </div>
+
+  <div class="zoro-frases">
+    {% for frase in frases %}
+      <p>“{{ frase }}”</p>
+    {% endfor %}
+  </div>
+
+  <button onclick="zoroProtege()" class="zoro-btn">Zoro, protégeme 💚</button>
+  <p id="respuesta-zoro" class="zoro-respuesta"></p>
+
+  <h2 style="margin-top: 50px;">🗡️ ¿Qué espada de Zoro serías tú?</h2>
+<form id="test-espada" onsubmit="return calcularEspada();" style="max-width: 600px; margin: auto; text-align: left;">
+  <div>
+    <label>1. ¿Qué te representa más?</label><br>
+    <input type="radio" name="q1" value="wado"> La lealtad y elegancia<br>
+    <input type="radio" name="q1" value="kitetsu"> La emoción y el caos<br>
+    <input type="radio" name="q1" value="shusui"> El misterio y la fuerza<br>
+  </div>
+  <br>
+  <div>
+    <label>2. ¿Qué harías en una batalla?</label><br>
+    <input type="radio" name="q2" value="wado"> Protegería a quien amo<br>
+    <input type="radio" name="q2" value="kitetsu"> Atacaría con todo sin pensar<br>
+    <input type="radio" name="q2" value="shusui"> Estudiaría al enemigo antes<br>
+  </div>
+  <br>
+    <div>
+    <label>3. ¿Qué tipo de amor te representa más?</label><br>
+    <input type="radio" name="q3" value="wado"> Amor tierno y protector<br>
+    <input type="radio" name="q3" value="kitetsu"> Amor apasionado y arriesgado<br>
+    <input type="radio" name="q3" value="shusui"> Amor profundo y silencioso<br>
+    </div>
+  <br>
+  <button type="submit" class="zoro-btn">¡Ver mi espada!</button>
+</form>
+
+<div id="resultado-espada" class="zoro-respuesta" style="margin-top: 30px;"></div>
+
+</div>
+
+<style>
+
+h1 {
+    color: #004d40;
+}
+.zona-zoro {
+  text-align: center;
+  padding: 50px;
+  background: #e0f7fa;
+  border-radius: 10px;
+  color: #004d40;
+  font-family: 'Courier New', monospace;
+}
+
+.zoro-galeria img {
+  width: 150px;
+  margin: 10px;
+  border: 3px solid #00897b;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px #00695c;
+}
+
+.zoro-frases p {
+  font-size: 1.2rem;
+  margin: 10px 0;
+  animation: aparecer 1s ease-in;
+}
+
+.zoro-btn {
+  margin-top: 20px;
+  background-color: #00796b;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.zoro-btn:hover {
+  transform: scale(1.05);
+}
+
+.zoro-respuesta {
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: #00695c;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#test-espada {
+  background-color: #f1f8e9;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 2px 2px 10px #ccc;
+  font-size: 1rem;
+}
+
+#test-espada label {
+  font-weight: bold;
+}
+
+#test-espada input[type="radio"] {
+  margin-right: 5px;
+}
+
+</style>
+
+<script>
+function zoroProtege() {
+  const frases = [
+    "¡Zoro te protegerá con sus tres espadas!",
+    "Nada te pasará, Zoro y Willy están contigo.",
+    "¡Zoro ha jurado cuidarte como su tesoro!",
+    "¡Zoro dice: Nadie toca a la reina de Willy!"
+  ];
+  const random = frases[Math.floor(Math.random() * frases.length)];
+  document.getElementById("respuesta-zoro").innerText = random;
+}
+
+function calcularEspada() {
+  // Obtener respuestas
+  const q1 = document.querySelector('input[name="q1"]:checked');
+  const q2 = document.querySelector('input[name="q2"]:checked');
+  const q3 = document.querySelector('input[name="q3"]:checked');
+
+  if (!q1 || !q2 || !q3) {
+    alert("Por favor responde todas las preguntas");
+    return false;  // Evitar submit
+  }
+
+  // Elegir espada según pregunta 3
+  let espada = q3.value; // "wado", "kitetsu" o "shusui"
+
+  // URLs de imágenes GIF
+  const imagenesEspadas = {
+    wado: "{% static 'img/wado.gif' %}",
+    kitetsu: "{% static 'img/kitetsu.gif' %}",
+    shusui: "{% static 'img/shusui.gif' %}"
+  };
+
+  // Mensajes para cada espada
+const mensajesEspadas = {
+  wado: "⚔️ ¡Eres Wado Ichimonji! Leal, pura y firme como una promesa eterna. Tu amor es noble, fuerte y silencioso, como una oración que Zoro llevaría en su corazón hasta el último aliento.",
+  kitetsu: "🔥 ¡Eres Sandai Kitetsu! Apasionada, intensa y valiente. Aunque muchos temen lo desconocido, quien te ama ve más allá del caos: descubre fuego, fe y un alma que arde con amor verdadero.",
+  shusui: "🌑 ¡Eres Shusui! Hermosa, profunda y sagrada. Como una noche estrellada guiada por Dios, tu misterio no aleja… atrae. Eres fuerza envuelta en ternura, temida por el mundo, adorada por quien te conoce."
+};
+
+
+  // Mostrar resultado
+  const resultadoDiv = document.getElementById("resultado-espada");
+  resultadoDiv.innerHTML = `
+    <p>${mensajesEspadas[espada]}</p>
+    <img src="${imagenesEspadas[espada]}" alt="Espada ${espada}" style="width: 100%; max-width: 400px; border-radius: 15px; margin-top: 15px;">
+  `;
+
+  return false;  // Prevenir envío y recarga de la página
+}
+
+</script>
+{% endblock %}

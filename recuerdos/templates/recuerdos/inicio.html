@@ -1,0 +1,951 @@
+{% extends 'recuerdos/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  .media-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin: 2rem auto;
+    max-width: 800px;
+    padding: 20px;
+  }
+
+  .media-card {
+    flex: 1 1 300px;
+    max-width: 360px;
+    height: 360px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .media-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .spline-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .ghibli-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+</style>
+
+<div class="portada">
+  <h1 class="titulo-pareja">💖 Ayelen y Williams 💖</h1>
+</div>
+
+<div class="media-row">
+  <!-- Efecto Spline a la izquierda -->
+  <div class="media-card">
+    <iframe 
+      src="https://my.spline.design/molang3dcopy-71QkthAypmzNjdQL4XCWDtc4/" 
+      class="spline-iframe">
+    </iframe>
+  </div>
+
+  <!-- Imagen estilo Ghibli a la derecha -->
+  <div class="media-card">
+    <img 
+      src="{% static 'img/ghibli.png' %}" 
+      alt="Recuerdo estilo Ghibli" 
+      class="ghibli-img">
+  </div>
+</div>
+
+<button class="btn-corazones" onclick="lanzarCorazones()">💗 Haz click aquí 💗</button>
+
+<style>
+  .spline-wrapper {
+  position: relative;
+  width: 100%;
+  height: 500px; /* Puedes ajustar la altura */
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background-image: url('fondo-romantico.png'); /* PNG personalizado */
+  background-size: cover;
+  background-position: center;
+}
+
+.spline-3d {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  transition: transform 0.3s ease;
+}
+
+.spline-3d:hover {
+  transform: scale(1.02);
+}
+
+</style>
+
+<div class="contenedor-bendicion">
+  <div class="bendicion-card">
+    <p>{{ bendicion }}</p>
+  </div>
+</div>
+
+<style>
+/* Contenedor centrado */
+.contenedor-bendicion {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  z-index: 10;
+}
+
+/* Tarjeta animada */
+.bendicion-card {
+  background: linear-gradient(135deg, #d6f0ff, #e6ffed);
+  border: 2px solid #b3e5fc;
+  border-radius: 20px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  font-size: 1.2rem;
+  color: #2e7d32;
+  font-weight: 600;
+  text-align: center;
+  max-width: 600px;
+  animation: fadeInBendicion 2s ease;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.bendicion-card:hover {
+  transform: scale(1.03);
+}
+
+/* Animación */
+@keyframes fadeInBendicion {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
+<div class="texto-bubble">TE AMO</div>
+
+<section class="galeria-amor">
+  <h2>Recuerdos amorosos a tu lado 💌</h2>
+  <div class="mosaico-recuerdos">
+    {% for r in recuerdos|slice:":12" %}
+      <a href="{% url 'detalle_recuerdo' r.id %}">
+        <img src="{{ r.imagen.url }}" alt="{{ r.titulo }}" class="foto-recuerdo marco-corazon">
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<br>
+<br>
+<br>
+<section class="carta">
+  <h2>Carta para ti ✉️</h2>
+  <button onclick="mostrarCarta()">💌 Leer carta</button>
+  <div id="contenido-carta" class="contenido-carta oculto">
+    <p id="texto-carta"></p>
+  </div>
+</section>
+
+<br>
+
+<!--RULETA-->
+{% include 'recuerdos/juegos/ruleta_cupones.html' %}
+<!--FIN DE RULETA-->
+
+<!--
+<h2 style="text-align: center;">🗺️ Nuestros recuerdos en el mapa</h2>
+<div id="mapa" style="height: 400px; border-radius: 12px; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.2); margin: 2rem 0;"></div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const recuerdos = JSON.parse('{{ datos_mapa|escapejs }}');
+  console.log("Recuerdos en mapa:", recuerdos);  // 👈 Esto mostrará si llegan datos
+
+  const map = L.map("mapa");
+  let bounds = [];
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap",
+    maxZoom: 18,
+  }).addTo(map);
+
+  recuerdos.forEach(r => {
+    const iconoMiniFoto = L.divIcon({
+      html: `<img src="${r.imagen}" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid #ff69b4;">`,
+      iconSize: [70, 70],
+      className: "custom-marker"
+    });
+
+    const marker = L.marker([r.latitud, r.longitud], { icon: iconoMiniFoto })
+      .addTo(map)
+      .bindPopup(`
+        <div style="text-align:center;">
+          <img src="${r.imagen}" style="width:100px;border-radius:8px;"><br>
+          <strong>${r.titulo}</strong><br>
+          <small>${r.fecha}</small><br>
+          <p>${r.descripcion}</p>
+          <a href="/recuerdo/${r.id}/" class="btn-ver">Ver detalle 💖</a>
+        </div>
+      `);
+
+    bounds.push([r.latitud, r.longitud]);
+  });
+
+  if (bounds.length > 0) {
+    map.fitBounds(bounds, { padding: [30, 30] });
+  } else {
+    map.setView([-33.4489, -70.6693], 11);
+  }
+});
+</script>-->
+
+<section id="musica-container">
+
+  <div class="reproductor-apple">
+    <div class="portada-contenedor" style="position: relative;">
+      <img id="portada" class="portada-musica" src="/static/img/perfect_now.jpg" alt="Portada">
+      <canvas id="visualizador" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;"></canvas>
+      <div class="ondas">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="info-musica">
+      <h4 id="titulo-cancion">Perfect Now</h4>
+      <p id="artista-cancion">Louis Tomlinson</p>
+    </div>
+
+    <audio id="player">
+      <source id="fuente-musica" src="" type="audio/mpeg"  preload="auto"> 
+    </audio>
+
+    <div class="barra-progreso">
+      <div id="progreso" class="progreso-interno"></div>
+    </div>
+
+    <div class="contenedor-barra">
+      <span id="tiempo-actual">0:00</span>
+      <div class="barra-progreso">
+        <div class="progreso" id="progreso"></div>
+      </div>
+      <span id="duracion-total">0:00</span>
+    </div>
+
+
+    <div class="controles-musica">
+      <button type="button" onclick="cambiarCancion(-1)">⏮</button>
+      <button type="button" onclick="togglePlay()">⏯</button>
+      <button type="button" onclick="cambiarCancion(1)">⏭</button>
+
+      <div class="control-volumen">
+        🔊
+        <input type="range" id="volumen" min="0" max="1" step="0.01" value="0.5">
+      </div>
+    </div>
+
+    <select id="selector-canciones" onchange="seleccionarCancion()">
+      <option disabled selected>🎶 Selecciona una canción...</option>
+      <!-- Opciones cargadas con JS -->
+    </select>
+  </div>
+
+  <div id="letra-container">
+    <!-- Aquí las líneas de la letra se cargarán con JS -->
+  </div>
+
+</section>
+
+
+<script>
+    function lanzarCorazones() {
+  const numCorazones = 15;
+  for (let i = 0; i < numCorazones; i++) {
+    const corazon = document.createElement('div');
+    corazon.classList.add('corazon-flotante');
+    corazon.textContent = '💖';
+
+    corazon.style.left = (window.innerWidth * Math.random()) + 'px';
+    corazon.style.top = (window.innerHeight - 50) + 'px';
+    corazon.style.fontSize = (12 + Math.random() * 20) + 'px';
+    corazon.style.opacity = Math.random();
+
+    document.body.appendChild(corazon);
+
+    setTimeout(() => {
+      corazon.style.opacity = 0;
+      corazon.style.transform = `translateY(-150px) scale(1.5)`;
+    }, 50);
+
+    setTimeout(() => {
+      corazon.remove();
+    }, 3000 + i * 200);
+  }
+}
+
+const canciones = [
+  "{% static 'musica/cancion1.mp3' %}",
+  "{% static 'musica/cancion2.mp3' %}",
+  "{% static 'musica/cancion3.mp3' %}"
+];
+let indiceCancion = 0;
+
+function cambiarCancion(direccion) {
+  indiceCancion += direccion;
+  if (indiceCancion < 0) indiceCancion = canciones.length - 1;
+  if (indiceCancion >= canciones.length) indiceCancion = 0;
+
+  const player = document.getElementById('player');
+  player.src = canciones[indiceCancion];
+  player.play();
+}
+
+
+let mostrando = false;
+
+function mostrarCarta() {
+  const cartaContainer = document.getElementById('contenido-carta');
+  const textoCarta = document.getElementById('texto-carta');
+
+  if (mostrando) return;
+  mostrando = true;
+
+  cartaContainer.classList.remove('oculto');
+  textoCarta.innerHTML = '<span id="texto-contenido"></span><span class="cursor">|</span>';
+
+  const texto = `Mi amor:
+
+Hoy me senté a pensar en nosotros, en todo lo que hemos vivido, y no pude evitar sonreír.
+Es increíble cómo llegaste a mi vida, como si el universo supiera exactamente lo que me faltaba.
+Desde entonces, no ha habido un solo día en que no me sienta agradecido por tenerte a mi lado.
+
+Tu risa es mi melodía favorita, tu mirada mi refugio, y tus abrazos... mi hogar.
+Contigo todo tiene más sentido, más color, más vida. Me has enseñado que el amor no siempre es perfecto,
+pero que con paciencia, cariño y complicidad, puede ser lo más hermoso que existe.
+
+A veces me cuesta poner en palabras lo que siento, porque lo que tú me haces sentir va más allá de lo que cualquier frase puede describir.
+Pero si tuviera que resumirlo: contigo soy feliz, y contigo quiero seguir caminando todos los días que la vida me regale.
+
+Gracias por existir, por elegirme cada día, por hacer de lo simple algo mágico.
+Te amo con todo lo que soy y todo lo que seré.`;
+
+  let i = 0;
+  const speed = 50; // velocidad más lenta (milisegundos por letra)
+
+  function escribirLetra() {
+    const span = document.getElementById('texto-contenido');
+    if (i < texto.length) {
+      span.innerHTML += texto.charAt(i) === '\n' ? '<br>' : texto.charAt(i);
+      i++;
+      setTimeout(escribirLetra, speed);
+    }
+  }
+
+  escribirLetra();
+}
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const canciones = [
+    {
+      titulo: "Perfect Now",
+      artista: "Louis Tomlinson",
+      archivo: "/static/musica/Louis Tomlinson - Perfect Now (Official Lyric Video).mp3",
+      portada: "/static/img/perfect_now.jpg",
+      lrc: "/static/letras/perfect_now.lrc"
+    },
+    {
+      titulo: "What Makes You Beautiful",
+      artista: "One Direction",
+      archivo: "/static/musica/One Direction - What Makes You Beautiful (Official Video).mp3",
+      portada: "/static/img/what_makes_you_beautiful.jpg",
+      lrc: "/static/letras/what_makes_you_beautiful.lrc"
+    },
+    {
+      titulo: "Perfect",
+      artista: "Ed Sheeran",
+      archivo: "/static/musica/Ed Sheeran - Perfect (Lyrics).mp3",
+      portada: "/static/img/perfect.jpg",
+      lrc: "/static/letras/perfect.lrc"
+    },
+    {
+      titulo: "Amé",
+      artista: "Christian Nodal",
+      archivo: "/static/musica/Christian Nodal - Amé (Letra).mp3",
+      portada: "/static/img/amé.jpg",
+      lrc: "/static/letras/amé.lrc"
+    },
+    {
+      titulo: "Aprender a quererte",
+      artista: "Morat",
+      archivo: "/static/musica/Aprender a quererteMorat (LETRA).mp3",
+      portada: "/static/img/aprender_a_quererte.jpg",
+      lrc: "/static/letras/aprender_a_quererte.lrc"
+    },
+    {
+      titulo: "La correcta",
+      artista: "Nabález, Morat",
+      archivo: "/static/musica/Nabález, Morat - La Correcta (Letra)..mp3",
+      portada: "/static/img/la_correcta.jpg",
+      lrc: "/static/letras/la_correcta.lrc"
+    },
+    {
+      titulo: "Porfa No Te Vayas",
+      artista: "Beret, Morat",
+      archivo: "/static/musica/Beret, Morat - Porfa No Te Vayas (Letra).mp3",
+      portada: "/static/img/porfa_no_te_vayas.jpg",
+      lrc: "/static/letras/porfa_no_te_vayas.lrc"
+    },
+    {
+      titulo: "Te Amo Con Locura",
+      artista: "Eyci and Cody",
+      archivo: "/static/musica/Te amo con locura.mp3",
+      portada: "/static/img/te_amo_con_locura.jpg",
+      lrc: "/static/letras/te_amo_con_locura.lrc"
+    },
+    {
+      titulo: "Tanto",
+      artista: "Jesse & Joy & Luis Fonsi",
+      archivo: "/static/musica/Jesse & Joy & Luis Fonsi - Tanto (LetraLyrics).mp3",
+      portada: "/static/img/tanto.jpg",
+      lrc: "/static/letras/tanto.lrc"
+    },
+    {
+      titulo: "Te Amo Tanto",
+      artista: "Nigga",
+      archivo: "/static/musica/Nigga - Te Amo Tanto.mp3",
+      portada: "/static/img/te_amo_tanto.jpg",
+      lrc: "/static/letras/te_amo_tanto.lrc"
+    },
+    {
+      titulo: "Tu Jardín Con Enanitos",
+      artista: "Melendi",
+      archivo: "/static/musica/Melendi - Tu jardín con enanitos (Lyric Video Oficial  Letra Completa).mp3",
+      portada: "/static/img/tu_jardin_con_enanitos.jpg",
+      lrc: "/static/letras/tu_jardin_con_enanitos.lrc"
+    },
+    {
+      titulo: "Destino o Caualidad",
+      artista: "Melendi ft. Ha*Ash",
+      archivo: "/static/musica/Melendi - Destino o Casualidad ft. HaAsh.mp3",
+      portada: "/static/img/destino_o_casualidad.jpg",
+      lrc: "/static/letras/destino_o_casualidad.lrc"
+    },
+    {
+      titulo: "Volví A Nacer",
+      artista: "Carlos Vives",
+      archivo: "/static/musica/Carlos Vives - Volví a Nacer (Letra  Lyrics).mp3",
+      portada: "/static/img/volvi_a_nacer.jpg",
+      lrc: "/static/letras/volvi_a_nacer.lrc"
+    },
+    {
+      titulo: "Eso Y Más",
+      artista: "Joan Sebastian",
+      archivo: "/static/musica/Joan Sebastian - Eso Y Más (Letra Oficial).mp3",
+      portada: "/static/img/eso_y_mas.jpg",
+      lrc: "/static/letras/eso_y_mas.lrc"
+    },
+    {
+      titulo: "Eres",
+      artista: "Soy Luna",
+      archivo: "/static/musica/Soy Luna - Eres (Luna y Simon) [letra].mp3",
+      portada: "/static/img/soy_luna.jpg",
+      lrc: "/static/letras/eres_soy_luna.lrc"
+    },
+    {
+      titulo: "M.A.I",
+      artista: "Milo J",
+      archivo: "/static/musica/m.a.i Milo j completa.mp3",
+      portada: "/static/img/mai_milo.jpg",
+      //lrc: "/static/letras/eres_soy_luna.lrc"
+    }
+  ];
+
+  const player = document.getElementById('player');
+  const fuenteMusica = document.getElementById('fuente-musica');
+  const tituloCancion = document.getElementById('titulo-cancion');
+  const artistaCancion = document.getElementById('artista-cancion');
+  const selectorCanciones = document.getElementById('selector-canciones');
+  const portada = document.getElementById('portada');
+  const progreso = document.getElementById('progreso');
+  const letraContainer = document.getElementById('letra-container');
+  const sliderVolumen = document.getElementById('volumen');
+  const canvas = document.getElementById('visualizador');
+  const ctx = canvas?.getContext('2d');
+
+  let audioContext, analyser, source, dataArray, bufferLength, animationId;
+  let letras = [];
+  let indice = Math.floor(Math.random() * canciones.length);
+
+  canciones.forEach((cancion, index) => {
+    const opcion = document.createElement("option");
+    opcion.value = index;
+    opcion.textContent = `🎵 ${cancion.titulo}`;
+    selectorCanciones.appendChild(opcion);
+  });
+
+  function cargarLRC(url) {
+    if (!url) {
+      letras = [];
+      letraContainer.innerHTML = "";
+      return Promise.resolve([]);
+    }
+    return fetch(url)
+      .then(res => res.text())
+      .then(texto => {
+        const lineas = texto.split('\n');
+        const datos = [];
+
+        lineas.forEach(linea => {
+          const match = linea.match(/\[(\d{2}):(\d{2}(?:\.\d{2})?)\](.*)/);
+          if (match) {
+            const minutos = parseInt(match[1]);
+            const segundos = parseFloat(match[2]);
+            const tiempo = minutos * 60 + segundos;
+            const texto = match[3].trim();
+            datos.push({ time: tiempo, text: texto });
+          }
+        });
+
+        letras = datos;
+        return datos;
+      });
+  }
+
+  function mostrarLetraSincronizada() {
+    if (!letras.length) return;
+
+    const currentTime = player.currentTime;
+    let activaIndex = 0;
+
+    for (let i = 0; i < letras.length; i++) {
+      if (currentTime >= letras[i].time) {
+        activaIndex = i;
+      } else {
+        break;
+      }
+    }
+
+    letraContainer.innerHTML = letras.map((linea, index) => `
+      <div class="linea-letra ${index === activaIndex ? 'activa' : ''}">
+        ${linea.text}
+      </div>
+    `).join('');
+
+    const activa = letraContainer.querySelector('.linea-letra.activa');
+    if (activa) {
+      letraContainer.scrollTo({
+        top: activa.offsetTop - letraContainer.clientHeight / 2 + activa.clientHeight / 2,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  function cargarCancion(i, autoPlay = false) {
+    const cancion = canciones[i];
+    indice = i;
+
+    tituloCancion.textContent = cancion.titulo;
+    artistaCancion.textContent = cancion.artista;
+    portada.src = cancion.portada;
+    fuenteMusica.src = cancion.archivo;
+    selectorCanciones.value = i;
+    player.load();
+
+    cargarLRC(cancion.lrc);
+
+    if (audioContext) iniciarVisualizador();
+
+    if (autoPlay) {
+      player.oncanplay = () => {
+        player.play().catch(console.error);
+        player.oncanplay = null;
+      };
+    }
+  }
+
+  // Guardar el índice de la canción actual en localStorage al cambiar
+  function guardarCancionActual() {
+    localStorage.setItem('cancionActual', indice);
+  }
+
+  // 🔄 Recuperar la canción guardada dentro del mismo bloque principal
+  const guardada = localStorage.getItem('cancionActual');
+  if (guardada !== null && !isNaN(parseInt(guardada))) {
+    indice = parseInt(guardada);
+  }
+
+
+  function cambiarCancion(dir) {
+    indice = (indice + dir + canciones.length) % canciones.length;
+    guardarCancionActual();
+    cargarCancion(indice, true);
+  }
+
+
+  function seleccionarCancion() {
+    const i = parseInt(selectorCanciones.value);
+    guardarCancionActual();
+    cargarCancion(i, true);
+  }
+
+
+  function togglePlay() {
+    if (!audioContext) iniciarVisualizador();
+    if (audioContext.state === 'suspended') audioContext.resume();
+
+    if (player.paused) {
+      player.play().catch(console.error);
+    } else {
+      player.pause();
+    }
+  }
+
+  function formatearTiempo(segundos) {
+  const minutos = Math.floor(segundos / 60);
+  const segundosRestantes = Math.floor(segundos % 60);
+  return `${minutos}:${segundosRestantes.toString().padStart(2, '0')}`;
+}
+
+function actualizarProgreso() {
+  const progreso = document.getElementById("progreso");
+  const tiempoActual = document.getElementById("tiempo-actual");
+  const duracionTotal = document.getElementById("duracion-total");
+
+  const porcentaje = (player.currentTime / player.duration) * 100;
+  progreso.style.width = `${porcentaje}%`;
+
+  tiempoActual.textContent = formatearTiempo(player.currentTime);
+  duracionTotal.textContent = formatearTiempo(player.duration);
+}
+
+  function ajustarProgreso(e) {
+    const barra = document.querySelector('.barra-progreso');
+    const rect = barra.getBoundingClientRect(); // coordenadas absolutas
+    const x = e.clientX - rect.left; // posición relativa dentro de la barra
+    const porcentaje = x / rect.width;
+    const nuevoTiempo = porcentaje * player.duration;
+    player.currentTime = nuevoTiempo;
+    actualizarProgreso(); // Para forzar el update visual
+  }
+
+
+  function ajustarCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+
+  function iniciarVisualizador() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    if (source) source.disconnect();
+
+    source = audioContext.createMediaElementSource(player);
+    analyser = audioContext.createAnalyser();
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+    analyser.fftSize = 256;
+
+    bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+
+    ajustarCanvas();
+    dibujarVisualizador();
+  }
+
+  function dibujarVisualizador() {
+    animationId = requestAnimationFrame(dibujarVisualizador);
+    analyser.getByteFrequencyData(dataArray);
+
+    const width = canvas.width / window.devicePixelRatio;
+    const height = canvas.height / window.devicePixelRatio;
+    ctx.clearRect(0, 0, width, height);
+
+    const barWidth = width / bufferLength;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = (dataArray[i] / 255) * height;
+      ctx.fillStyle = '#ff69b4';
+      ctx.fillRect(x, height - barHeight, barWidth * 0.7, barHeight);
+      x += barWidth;
+    }
+  }
+
+  // 📌 EVENTOS
+  document.querySelector('.barra-progreso').addEventListener('click', ajustarProgreso);
+  player.addEventListener('timeupdate', actualizarProgreso);
+  player.addEventListener('timeupdate', mostrarLetraSincronizada);
+  player.addEventListener("loadedmetadata", () => {
+  console.log("Duración disponible:", player.duration);
+});
+  player.addEventListener("timeupdate", actualizarProgreso);
+  player.addEventListener("loadedmetadata", actualizarProgreso);
+
+  selectorCanciones.addEventListener('change', seleccionarCancion);
+  document.querySelector('.controles-musica button:nth-child(1)').addEventListener('click', () => cambiarCancion(-1));
+  document.querySelector('.controles-musica button:nth-child(2)').addEventListener('click', togglePlay);
+  document.querySelector('.controles-musica button:nth-child(3)').addEventListener('click', () => cambiarCancion(1));
+  window.addEventListener('resize', ajustarCanvas);
+  sliderVolumen.addEventListener('input', () => {
+    player.volume = parseFloat(sliderVolumen.value);
+  });
+
+  player.volume = 0.5;
+  cargarCancion(indice, true); // 🎵 Carga aleatoria inicial
+});
+</script>
+
+<style>
+  #musica-container {
+  max-width: 750px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 240, 245, 0.9); /* rosa pastel translúcido */
+  border-radius: 1.2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 15px 35px rgba(255, 105, 180, 0.3);
+  display: flex;
+  gap: 2rem;
+  font-family: 'Georgia', serif;
+  color: #5a2a4d;
+}
+
+/* Contenedor del reproductor (izquierda) */
+.reproductor-apple {
+  flex: 1 1 40%;
+  margin: 0;
+  padding: 20px;
+  border-radius: 20px;
+  background: #fff0f6;
+  box-shadow: 0 6px 30px rgba(246, 105, 180, 0.25);
+  text-align: center;
+  font-family: 'Arial Rounded MT', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Botones del reproductor */
+#reproductor-musica button {
+  margin: 0 10px;
+  background: linear-gradient(135deg, #f06292 0%, #d6336c 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(246, 111, 166, 0.6);
+  font-weight: 600;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+#reproductor-musica button:hover {
+  background: linear-gradient(135deg, #d6336c 0%, #a31e4d 100%);
+  box-shadow: 0 6px 20px rgba(214, 51, 108, 0.9);
+}
+
+/* Barra de progreso */
+.progreso-interno {
+  height: 100%;
+  width: 0%;
+  background: #ff69b4;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+}
+
+/* Selector de canciones */
+#selector-canciones {
+  margin-top: 15px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px solid #ff69b4;
+  background-color: #fff0f6;
+  font-weight: 600;
+  color: #d6336c;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+#selector-canciones:hover,
+#selector-canciones:focus {
+  border-color: #a31e4d;
+  outline: none;
+}
+
+/* Control de volumen */
+.control-volumen input[type=range] {
+  width: 120px;
+  accent-color: #d6336c;
+  cursor: pointer;
+  transition: accent-color 0.3s ease;
+}
+
+.control-volumen input[type=range]:hover {
+  accent-color: #a31e4d;
+}
+
+/* Contenedor de letra (derecha) */
+#letra-container {
+  flex: 1 1 60%;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  background: rgba(255, 182, 193, 0.3);
+  border-radius: 1rem;
+  box-shadow: inset 0 0 10px rgba(255, 105, 180, 0.4);
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #4a1c3d;
+  text-align: center;
+  scrollbar-width: thin;
+  scrollbar-color: #ff69b4 #fce4ec;
+}
+
+#letra-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#letra-container::-webkit-scrollbar-track {
+  background: #fce4ec;
+  border-radius: 10px;
+}
+
+#letra-container::-webkit-scrollbar-thumb {
+  background-color: #ff69b4;
+  border-radius: 10px;
+  border: 2px solid #fce4ec;
+}
+
+.linea-letra {
+  opacity: 0.5;
+  transition: all 0.4s ease;
+  margin: 0.3rem 0;
+  padding: 0 0.5rem;
+  border-radius: 0.5rem;
+  cursor: default;
+}
+
+.linea-letra.activa {
+  color: #ff1e6c;
+  font-weight: 700;
+  font-size: 1.4rem;
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(255, 30, 108, 0.7);
+  background: rgba(255, 182, 193, 0.6);
+  user-select: none;
+}
+.barra-progreso {
+  width: 100%;
+  height: 10px;
+  background: #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.progreso-interno {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff69b4, #ff1493);
+  border-radius: 5px;
+  transition: width 0.2s;
+}
+
+.contenedor-barra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+</style>
+
+<script id="recuerdos-json" type="application/json">
+  {{ recuerdos_json|safe }}
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const mapa = L.map("mapa").setView([-33.45, -70.66], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+    }).addTo(mapa);
+
+    const iconoAmor = L.icon({
+      iconUrl: "{% static 'img/heart-marker.png' %}",
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -30]
+    });
+
+    // ✅ Usar los datos del bloque JSON
+    const recuerdos = JSON.parse(document.getElementById("recuerdos-json").textContent);
+
+    recuerdos.forEach(r => {
+      L.marker([r.latitud, r.longitud], { icon: iconoAmor })
+        .addTo(mapa)
+        .bindPopup(`<strong>${r.titulo}</strong><br>${r.fecha}`);
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const recuerdos = JSON.parse('{{ datos_mapa|escapejs }}');
+
+    const map = L.map("mapa").setView([-33.4489, -70.6693], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap",
+      maxZoom: 18,
+    }).addTo(map);
+
+    const iconoEmoji = L.divIcon({
+      html: "📌", // puedes usar 📍, 💖, 📸 o una imagen con <img>
+      className: "emoji-marker",
+      iconSize: [40, 40], // tamaño aumentado
+      iconAnchor: [20, 40] // punto de anclaje
+    });
+
+    recuerdos.forEach(r => {
+      L.marker([r.latitud, r.longitud], { icon: iconoEmoji })
+        .addTo(map)
+        .bindPopup(`<strong>${r.titulo}</strong><br><em>${r.fecha}</em>`);
+    });
+  });
+</script>
+
+{% endblock %}

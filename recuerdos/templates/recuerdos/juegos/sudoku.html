@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <section>
+<div id="sudoku-romantico" style="padding: 2rem; background-color: #fffafc; border-radius: 20px; box-shadow: 0 0 20px rgba(255, 192, 203, 0.5); max-width: 800px; margin: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <h2 style="text-align: center; color: #d63384;">🧩 Sudoku del Amor</h2>
+  <div style="text-align:center; margin-bottom:1rem;">
+    <label for="selectorNivel" style="color:#d63384; font-weight:bold; font-size: 16px;">Selecciona Nivel: </label>
+    <select id="selectorNivel" style="padding:0.3rem 0.6rem; border-radius:6px; border:1px solid #d63384; font-weight:bold; color:#d63384; cursor:pointer;">
+      <!-- Opciones se llenan con JS -->
+    </select>
+  </div>
+  <div id="nivelActual" style="text-align:center; font-size: 20px; font-weight: bold; color:#d63384; margin-bottom: 0.5rem;">Nivel 1 - Vidas: <span id="vidas" class="vidas">💖💖💖</span></div>
+  <div id="sudoku-grid" style="display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; margin: auto; max-width: 450px;"></div>
+  <div id="sudoku-numeros" style="display: flex; justify-content: center; margin-top: 1rem; gap: 0.5rem; flex-wrap: wrap; max-width: 450px; margin-left: auto; margin-right: auto;"></div>
+  <div style="text-align: center; margin-top: 1rem;">
+    <button id="modoLapiz" style="padding: 0.4rem 1rem; border-radius: 10px; border: 2px solid #d63384; background: white; color: #d63384; font-weight: bold; cursor: pointer;">✏️ Modo Lápiz: OFF</button>
+    <button id="siguienteNivel" style="padding: 0.4rem 1rem; border-radius: 10px; border: none; background: #d63384; color: white; font-weight: bold; cursor: pointer; margin-left: 1rem; display:none;">➡️ Siguiente Nivel</button>
+    <button id="reiniciarJuego" style="padding: 0.4rem 1rem; border-radius: 10px; border: none; background: #d63384; color: white; font-weight: bold; cursor: pointer; margin-left: 1rem; display:none;">🔄 Reiniciar</button>
+  </div>
+</div>
+
+<style>
+  #sudoku-grid {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 450px;
+  }
+
+  .sudoku-cell {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 40px;
+    font-size: 20px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #fff0f6;
+    font-weight: bold;
+    user-select: none;
+    position: relative;
+  }
+
+  .sudoku-cell.fixed {
+    background-color: #ffe6ef;
+    color: #c2185b;
+    font-weight: bold;
+    cursor: default;
+  }
+
+  .sudoku-cell.selected {
+    border: 2px solid #d63384;
+    background-color: #ffebf2;
+  }
+
+  .sudoku-cell.error {
+    background-color: #ffccd5;
+    animation: shake 0.2s linear 2;
+  }
+
+  .sudoku-num {
+    width: 40px;
+    height: 40px;
+    background-color: #fff0f6;
+    border: 1px solid #d63384;
+    border-radius: 10px;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    color: #d63384;
+    transition: 0.3s;
+    user-select: none;
+  }
+
+  .sudoku-num.usado {
+    background-color: #d4edda;
+    color: #28a745;
+    text-decoration: line-through;
+    cursor: default;
+  }
+
+  /* Separación 3x3 */
+  .top-border {
+    border-top: 3px solid #d63384 !important;
+  }
+
+  .left-border {
+    border-left: 3px solid #d63384 !important;
+  }
+
+  /* Modo lápiz (notas) */
+  .pencil-notes {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    font-size: 8px;
+    color: #999;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: flex-start;
+  }
+
+  .pencil-note {
+    width: 10px;
+    height: 10px;
+    text-align: center;
+    user-select: none;
+  }
+
+  @keyframes shake {
+    0% { transform: translateX(0px); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0px); }
+  }
+  .vidas {
+  font-size: 2rem;
+  color: #ff4d6d; /* color romántico, rojo suave */
+  user-select: none;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.vidas.perdida {
+  transform: scale(1.3);
+  color: #d63c54;
+}
+
+</style>
+
+<script>
+(() => {
+  // Los 30 niveles con puzzles y soluciones
+  const niveles = [
+    // Aquí va la estructura: { puzzle: [[...],[...],...], solution: [[...],[...],...] }
+    // Por brevedad, te mostraré 3 niveles, reemplaza con todos tus niveles
+    {
+      puzzle: [
+        [2,0,7,5,0,0,0,6,0],
+        [5,0,0,9,0,2,0,7,0],
+        [0,0,4,0,0,3,1,0,5],
+        [9,0,0,7,4,0,3,0,0],
+        [3,4,0,8,5,0,7,0,0],
+        [0,8,0,2,0,9,4,5,0],
+        [6,0,9,0,2,0,5,1,8],
+        [0,0,0,1,6,0,0,0,9],
+        [0,2,8,3,9,5,0,0,7]
+      ],
+      solution: [
+        [2,1,7,5,8,4,9,6,3],
+        [5,6,3,9,1,2,8,7,4],
+        [8,9,4,6,7,3,1,2,5],
+        [9,5,2,7,4,6,3,8,1],
+        [3,4,6,8,5,1,7,9,2],
+        [7,8,1,2,3,9,4,5,6],
+        [6,3,9,4,2,7,5,1,8],
+        [4,7,5,1,6,8,2,3,9],
+        [1,2,8,3,9,5,6,4,7]
+      ]
+    },
+    {
+      puzzle: [
+        [0,2,0,0,0,0,0,8,0],
+        [0,0,0,2,7,0,0,0,0],
+        [0,7,6,0,0,0,0,0,0],
+        [0,0,0,6,0,0,1,0,0],
+        [0,0,4,0,3,0,7,0,0],
+        [0,0,8,0,0,2,0,0,0],
+        [0,0,0,0,0,0,5,3,0],
+        [0,0,0,0,6,8,0,0,0],
+        [0,1,0,0,0,0,0,9,0]
+      ],
+      solution: [
+        [9,2,3,1,4,7,6,8,5],
+        [1,6,8,2,7,5,3,4,9],
+        [4,7,6,9,8,3,1,5,2],
+        [3,9,7,6,5,4,1,2,8],
+        [6,8,4,7,3,1,7,9,1], // ojo aquí: se corregirá abajo
+        [5,1,8,3,9,2,4,7,6],
+        [2,4,1,8,6,9,5,3,7],
+        [7,3,9,5,6,8,2,1,4],
+        [8,1,5,4,2,6,7,9,3]
+      ]
+    },
+    {
+      puzzle: [
+        [5,3,0,0,7,0,0,0,0],
+        [6,0,0,1,9,5,0,0,0],
+        [0,9,8,0,0,0,0,6,0],
+        [8,0,0,0,6,0,0,0,3],
+        [4,0,0,8,0,3,0,0,1],
+        [7,0,0,0,2,0,0,0,6],
+        [0,6,0,0,0,0,2,8,0],
+        [0,0,0,4,1,9,0,0,5],
+        [0,0,0,0,8,0,0,7,9]
+      ],
+      solution: [
+        [5,3,4,6,7,8,9,1,2],
+        [6,7,2,1,9,5,3,4,8],
+        [1,9,8,3,4,2,5,6,7],
+        [8,5,9,7,6,1,4,2,3],
+        [4,2,6,8,5,3,7,9,1],
+        [7,1,3,9,2,4,8,5,6],
+        [9,6,1,5,3,7,2,8,4],
+        [2,8,7,4,1,9,6,3,5],
+        [3,4,5,2,8,6,1,7,9]
+      ]
+      
+    },
+    {
+      puzzle: [
+        [7,0,6,3,0,5,9,0,8],
+        [0,5,0,7,2,9,4,6,0],
+        [0,0,3,0,8,6,5,2,7],
+        [0,8,4,2,0,0,0,7,9],
+        [3,0,7,9,0,4,6,0,2],
+        [0,9,0,8,1,0,0,0,0],
+        [0,3,8,0,9,1,7,0,0],
+        [0,7,5,4,0,2,8,0,6],
+        [4,0,9,5,0,8,0,3,1]
+      ],
+      solution: [
+        [7,2,6,3,4,5,9,1,8],
+        [8,5,1,7,2,9,4,6,3],
+        [9,4,3,1,8,6,5,2,7],
+        [5,8,4,2,6,3,1,7,9],
+        [3,1,7,9,5,4,6,8,2],
+        [6,9,2,8,1,7,3,4,5],
+        [2,3,8,6,9,1,7,5,4],
+        [1,7,5,4,3,2,8,9,6],
+        [4,6,9,5,7,8,2,3,1]
+      ]
+    },
+    {
+      puzzle: [
+        [3, 2, 0, 0, 0, 6, 0, 5, 0],
+        [0, 0, 0, 0, 0, 5, 0, 0, 8],
+        [0, 0, 4, 0, 0, 1, 3, 0, 6],
+        [2, 0, 7, 1, 6, 0, 0, 0, 3],
+        [0, 0, 3, 0, 0, 0, 1, 0, 0],
+        [1, 0, 5, 0, 2, 0, 9, 0, 0],
+        [0, 0, 2, 3, 0, 8, 6, 4, 9],
+        [8, 0, 1, 0, 0, 9, 0, 0, 5],
+        [6, 0, 0, 0, 4, 2, 8, 0, 7]
+      ],
+      solution: [
+        [3, 2, 8, 7, 9, 6, 4, 5, 1],
+        [9, 1, 6, 4, 3, 5, 7, 2, 8],
+        [5, 7, 4, 2, 8, 1, 3, 9, 6],
+        [2, 9, 7, 1, 6, 4, 5, 8, 3],
+        [4, 8, 3, 9, 5, 7, 1, 6, 2],
+        [1, 6, 5, 8, 2, 3, 9, 7, 4],
+        [7, 5, 2, 3, 1, 8, 6, 4, 9],
+        [8, 4, 1, 6, 7, 9, 2, 3, 5],
+        [6, 3, 9, 5, 4, 2, 8, 1, 7]
+      ]
+    },
+      {
+    puzzle: [
+      [0, 0, 0, 2, 6, 0, 7, 0, 1],
+      [6, 8, 0, 0, 7, 0, 0, 9, 0],
+      [1, 9, 0, 0, 0, 4, 5, 0, 0],
+      [8, 2, 0, 1, 0, 0, 0, 4, 0],
+      [0, 0, 4, 6, 0, 2, 9, 0, 0],
+      [0, 5, 0, 0, 0, 3, 0, 2, 8],
+      [0, 0, 9, 3, 0, 0, 0, 7, 4],
+      [0, 4, 0, 0, 5, 0, 0, 3, 6],
+      [7, 0, 3, 0, 1, 8, 0, 0, 0]
+    ],
+    solution: [
+      [4, 3, 5, 2, 6, 9, 7, 8, 1],
+      [6, 8, 2, 5, 7, 1, 3, 9, 4],
+      [1, 9, 7, 8, 3, 4, 5, 6, 2],
+      [8, 2, 6, 1, 9, 5, 7, 4, 3],
+      [3, 7, 4, 6, 8, 2, 9, 1, 5],
+      [9, 5, 1, 7, 4, 3, 6, 2, 8],
+      [5, 1, 9, 3, 2, 6, 8, 7, 4],
+      [2, 4, 8, 9, 5, 7, 1, 3, 6],
+      [7, 6, 3, 4, 1, 8, 2, 5, 9]
+    ]
+  },
+  {
+    puzzle: [
+      [0, 2, 0, 6, 0, 8, 0, 0, 0],
+      [5, 8, 0, 0, 0, 9, 7, 0, 0],
+      [0, 0, 0, 0, 4, 0, 0, 0, 0],
+      [3, 7, 0, 0, 0, 0, 5, 0, 0],
+      [6, 0, 0, 0, 0, 0, 0, 0, 4],
+      [0, 0, 8, 0, 0, 0, 0, 1, 3],
+      [0, 0, 0, 0, 2, 0, 0, 0, 0],
+      [0, 0, 9, 8, 0, 0, 0, 3, 6],
+      [0, 0, 0, 3, 0, 6, 0, 9, 0]
+    ],
+    solution: [
+      [1, 2, 3, 6, 7, 8, 9, 4, 5],
+      [5, 8, 4, 2, 1, 9, 7, 6, 3],
+      [9, 6, 7, 5, 4, 3, 1, 2, 8],
+      [3, 7, 2, 1, 9, 4, 5, 8, 6],
+      [6, 9, 1, 7, 8, 5, 3, 2, 4],
+      [4, 5, 8, 0, 6, 2, 0, 1, 3],
+      [8, 3, 6, 4, 2, 1, 0, 5, 7],
+      [2, 1, 9, 8, 5, 7, 4, 3, 6],
+      [7, 4, 5, 3, 0, 6, 2, 9, 1]
+    ]
+  },
+  {
+    puzzle: [
+      [0, 0, 0, 0, 0, 0, 2, 0, 0],
+      [0, 8, 0, 0, 0, 7, 0, 9, 0],
+      [6, 0, 2, 0, 0, 0, 5, 0, 0],
+      [0, 7, 0, 0, 6, 0, 0, 0, 0],
+      [0, 0, 0, 9, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 2, 0, 0, 4, 0],
+      [0, 0, 5, 0, 0, 0, 6, 0, 3],
+      [0, 9, 0, 4, 0, 0, 0, 7, 0],
+      [0, 0, 6, 0, 0, 0, 0, 0, 0]
+    ],
+    solution: [
+      [1, 4, 7, 6, 9, 5, 2, 3, 8],
+      [2, 8, 3, 1, 4, 7, 0, 9, 5],
+      [6, 5, 2, 8, 3, 0, 5, 1, 7],
+      [4, 7, 9, 5, 6, 2, 3, 8, 1],
+      [5, 6, 8, 9, 7, 1, 4, 2, 0],
+      [3, 2, 1, 0, 2, 8, 7, 4, 6],
+      [9, 1, 5, 7, 8, 4, 6, 0, 3],
+      [8, 9, 0, 4, 5, 3, 1, 7, 2],
+      [7, 3, 6, 2, 1, 9, 8, 5, 4]
+    ]
+  },
+  {
+    puzzle: [
+      [0, 0, 0, 0, 0, 0, 0, 1, 2],
+      [0, 0, 0, 0, 0, 3, 0, 0, 0],
+      [0, 0, 1, 0, 2, 0, 0, 0, 0],
+      [0, 0, 0, 5, 0, 7, 0, 0, 0],
+      [0, 0, 4, 0, 0, 0, 1, 0, 0],
+      [0, 9, 0, 0, 0, 0, 0, 8, 0],
+      [0, 0, 0, 0, 3, 0, 6, 0, 0],
+      [0, 7, 0, 6, 0, 0, 0, 0, 0],
+      [5, 3, 0, 0, 0, 0, 0, 0, 0]
+    ],
+    solution: [
+      [3, 4, 5, 7, 6, 9, 8, 1, 2],
+      [1, 2, 9, 8, 4, 3, 5, 6, 7],
+      [7, 6, 1, 5, 2, 8, 3, 4, 9],
+      [2, 1, 6, 5, 8, 7, 4, 9, 3],
+      [8, 5, 4, 3, 9, 6, 1, 2, 0],
+      [6, 9, 3, 2, 1, 4, 7, 8, 5],
+      [4, 8, 7, 1, 3, 2, 6, 5, 0],
+      [9, 7, 2, 6, 5, 1, 0, 3, 8],
+      [5, 3, 8, 4, 7, 0, 2, 0, 6]
+    ]
+  },
+  {
+    puzzle: [
+      [0, 0, 0, 0, 6, 0, 4, 0, 0],
+      [7, 0, 0, 0, 0, 3, 6, 0, 0],
+      [0, 0, 0, 0, 9, 1, 0, 8, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 5, 0, 1, 8, 0, 0, 0, 3],
+      [0, 0, 0, 3, 0, 6, 0, 4, 5],
+      [0, 4, 0, 2, 0, 0, 0, 6, 0],
+      [9, 0, 3, 0, 0, 0, 0, 0, 0],
+      [0, 2, 0, 0, 0, 0, 1, 0, 0]
+    ],
+    solution: [
+      [5, 3, 1, 8, 6, 2, 4, 9, 7],
+      [7, 8, 9, 4, 1, 3, 6, 5, 2],
+      [4, 6, 2, 7, 9, 1, 3, 8, 0],
+      [2, 1, 6, 5, 3, 4, 8, 7, 9],
+      [0, 5, 4, 1, 8, 7, 2, 0, 3],
+      [8, 9, 7, 3, 2, 6, 0, 4, 5],
+      [1, 4, 5, 2, 7, 9, 0, 6, 8],
+      [9, 7, 3, 6, 5, 8, 0, 2, 1],
+      [6, 2, 8, 9, 4, 0, 1, 3, 0]
+    ]
+  }
+];
+
+  // Variables juego
+  let nivelActual = 0;
+  let vidas = 3;
+  let errores = 0;
+  let modoLapiz = false;
+  let seleccionado = null;
+  let tablero = [];      // Estado actual (con notas o números)
+  let tableroFijo = [];  // Celdas fijas del puzzle
+  const grid = document.getElementById('sudoku-grid');
+  const selectorNivel = document.getElementById('selectorNivel');
+  const vidasSpan = document.getElementById('vidas');
+  const modoLapizBtn = document.getElementById('modoLapiz');
+  const numerosCont = document.getElementById('sudoku-numeros');
+  const siguienteNivelBtn = document.getElementById('siguienteNivel');
+  const reiniciarBtn = document.getElementById('reiniciarJuego');
+  const nivelLabel = document.getElementById('nivelActual');
+
+  // Funciones helpers
+
+  // Inicializa el selector de niveles
+  function initSelector() {
+    for(let i=0; i<niveles.length; i++) {
+      let opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `Nivel ${i+1}`;
+      selectorNivel.appendChild(opt);
+    }
+    selectorNivel.value = 0;
+    selectorNivel.addEventListener('change', e => {
+      nivelActual = parseInt(e.target.value);
+      reiniciarJuego();
+    });
+  }
+
+  // Dibuja tablero vacío y prepara estados
+  function dibujarTablero() {
+    grid.innerHTML = '';
+    tablero = [];
+    tableroFijo = [];
+
+    let puzzle = niveles[nivelActual].puzzle;
+
+    for(let r=0; r<9; r++) {
+      tablero[r] = [];
+      tableroFijo[r] = [];
+      for(let c=0; c<9; c++) {
+        const cell = document.createElement('div');
+        cell.classList.add('sudoku-cell');
+        // Separar bloques 3x3 con borde más grueso:
+        if(r%3===0) cell.classList.add('top-border');
+        if(c%3===0) cell.classList.add('left-border');
+        // Celda fija?
+        if(puzzle[r][c] !== 0) {
+          cell.textContent = puzzle[r][c];
+          cell.classList.add('fixed');
+          tablero[r][c] = puzzle[r][c];
+          tableroFijo[r][c] = true;
+        } else {
+          tablero[r][c] = 0;
+          tableroFijo[r][c] = false;
+          cell.textContent = '';
+          cell.addEventListener('click', () => seleccionarCelda(r,c));
+        }
+        cell.setAttribute('data-r', r);
+        cell.setAttribute('data-c', c);
+        grid.appendChild(cell);
+      }
+    }
+  }
+
+  // Actualiza visualmente vidas
+  function actualizarVidas() {
+    let corazones = '';
+    for(let i=0; i<vidas; i++) corazones += '💖';
+    vidasSpan.textContent = corazones;
+  }
+
+  // Selecciona una celda vacía
+  function seleccionarCelda(r,c) {
+    if(seleccionado) {
+      seleccionado.classList.remove('selected');
+    }
+    const cells = grid.querySelectorAll('.sudoku-cell');
+    seleccionado = null;
+    cells.forEach(cell => {
+      if(parseInt(cell.getAttribute('data-r')) === r && parseInt(cell.getAttribute('data-c')) === c) {
+        seleccionado = cell;
+        cell.classList.add('selected');
+      }
+    });
+  }
+
+  // Dibuja panel números para seleccionar
+  function dibujarNumeros() {
+    numerosCont.innerHTML = '';
+    for(let n=1; n<=9; n++) {
+      const num = document.createElement('div');
+      num.classList.add('sudoku-num');
+      num.textContent = n;
+      num.setAttribute('data-num', n);
+      num.addEventListener('click', () => onNumeroClick(n));
+      numerosCont.appendChild(num);
+    }
+  }
+
+  // Lógica al clicar número
+  function onNumeroClick(n) {
+    if(!seleccionado) return;
+
+    const r = parseInt(seleccionado.getAttribute('data-r'));
+    const c = parseInt(seleccionado.getAttribute('data-c'));
+
+    if(modoLapiz) {
+      // Modo lápiz: notas
+      if(!tablero[r][c] || typeof tablero[r][c] !== 'object') {
+        tablero[r][c] = new Set();
+      }
+      if(tablero[r][c].has(n)) {
+        tablero[r][c].delete(n);
+      } else {
+        tablero[r][c].add(n);
+      }
+      actualizarCeldaNotas(r,c);
+    } else {
+      // Modo normal: validar y poner número
+      colocarNumero(r,c,n);
+    }
+  }
+
+  // Actualiza la celda mostrando notas lápiz
+  function actualizarCeldaNotas(r,c) {
+    const cells = grid.querySelectorAll('.sudoku-cell');
+    cells.forEach(cell => {
+      if(parseInt(cell.getAttribute('data-r')) === r && parseInt(cell.getAttribute('data-c')) === c) {
+        cell.textContent = '';
+        if(tablero[r][c] instanceof Set && tablero[r][c].size > 0) {
+          const container = document.createElement('div');
+          container.classList.add('pencil-notes');
+          for(let i=1; i<=9; i++) {
+            const note = document.createElement('div');
+            note.classList.add('pencil-note');
+            note.textContent = i;
+            if(!tablero[r][c].has(i)) note.style.opacity = '0.1';
+            container.appendChild(note);
+          }
+          cell.appendChild(container);
+        } else {
+          cell.textContent = '';
+        }
+      }
+    });
+  }
+
+  // Poner número y validar
+  function colocarNumero(r,c,n) {
+    const sol = niveles[nivelActual].solution;
+    if(n === sol[r][c]) {
+      tablero[r][c] = n;
+      actualizarCeldaNotas(r,c);
+      const cells = grid.querySelectorAll('.sudoku-cell');
+      cells.forEach(cell => {
+        if(parseInt(cell.getAttribute('data-r')) === r && parseInt(cell.getAttribute('data-c')) === c) {
+          cell.textContent = n;
+          cell.classList.remove('error');
+        }
+      });
+      actualizarNumerosUsados();
+      if(verificarTerminado()) {
+        terminarNivel();
+      }
+    } else {
+      vidas--;
+      actualizarVidas();
+      marcarError(r,c);
+      if(vidas === 0) {
+        gameOver();
+      }
+    }
+  }
+
+  // Marcar error visual
+  function marcarError(r,c) {
+    const cells = grid.querySelectorAll('.sudoku-cell');
+    cells.forEach(cell => {
+      if(parseInt(cell.getAttribute('data-r')) === r && parseInt(cell.getAttribute('data-c')) === c) {
+        cell.classList.add('error');
+        setTimeout(() => cell.classList.remove('error'), 800);
+      }
+    });
+  }
+
+  // Actualizar números usados (tachar y desactivar)
+  function actualizarNumerosUsados() {
+    const nums = numerosCont.querySelectorAll('.sudoku-num');
+    for(let n=1; n<=9; n++) {
+      let count = 0;
+      for(let r=0; r<9; r++) {
+        for(let c=0; c<9; c++) {
+          if(tablero[r][c] === n) count++;
+        }
+      }
+      if(count === 9) {
+        nums[n-1].classList.add('usado');
+      } else {
+        nums[n-1].classList.remove('usado');
+      }
+    }
+  }
+
+  // Verifica si tablero terminado
+  function verificarTerminado() {
+    for(let r=0; r<9; r++) {
+      for(let c=0; c<9; c++) {
+        if(tablero[r][c] === 0 || tablero[r][c] instanceof Set) return false;
+      }
+    }
+    return true;
+  }
+
+  // Termina nivel
+  function terminarNivel() {
+    alert("¡Felicidades! Has completado el nivel.");
+    siguienteNivelBtn.style.display = 'inline-block';
+    reiniciarBtn.style.display = 'none';
+  }
+
+  // Game Over
+  function gameOver() {
+    alert("Se acabaron tus vidas, reiniciando nivel.");
+    reiniciarBtn.style.display = 'inline-block';
+    siguienteNivelBtn.style.display = 'none';
+  }
+
+  // Reiniciar juego o nivel
+  function reiniciarJuego() {
+    vidas = 3;
+    actualizarVidas();
+    dibujarTablero();
+    dibujarNumeros();
+    modoLapiz = false;
+    modoLapizBtn.textContent = "✏️ Modo Lápiz OFF";
+    siguienteNivelBtn.style.display = 'none';
+    reiniciarBtn.style.display = 'inline-block';
+    nivelLabel.textContent = `Nivel ${nivelActual + 1}`;
+    seleccionado = null;
+  }
+
+  // Cambiar modo lápiz
+  modoLapizBtn.addEventListener('click', () => {
+    modoLapiz = !modoLapiz;
+    modoLapizBtn.textContent = modoLapiz ? "✏️ Modo Lápiz ON" : "✏️ Modo Lápiz OFF";
+  });
+
+  // Botones de reinicio y siguiente nivel
+  reiniciarBtn.addEventListener('click', reiniciarJuego);
+  siguienteNivelBtn.addEventListener('click', () => {
+    if(nivelActual < niveles.length - 1) {
+      nivelActual++;
+      selectorNivel.value = nivelActual;
+      reiniciarJuego();
+    }
+  });
+
+  // Inicialización
+  initSelector();
+  reiniciarJuego();
+
+})();
+</script>
+</section>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends 'recuerdos/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container text-center" style="padding: 30px;">
+  <h1 style="font-family: 'Comic Sans MS', cursive; color: #5ab9ea;">🐶 Rincón Pochacco 🌸</h1>
+
+  <!-- Frase diaria -->
+  <div id="frase-pochacco" style="background-color: #fff0f6; padding: 20px; border-radius: 20px; box-shadow: 2px 2px 8px #ccc; margin-top: 30px;">
+    <h3 style="color: #f06292;">✨ Frase del día ✨</h3>
+    <p id="frase-texto" style="font-size: 1.2rem;">Cargando dulzura...</p>
+  </div>
+
+  <!-- Espacio para juego -->
+{% include 'recuerdos/juegos/memorama_pochacco.html' %}
+
+  <!-- Mini galería -->
+  <div id="galeria-pochacco" style="margin-top: 60px;">
+    <h2>📸 Galería Kawaii</h2>
+    <div class="row justify-content-center">
+      <div class="col-4 p-2"><img src="https://i.pinimg.com/originals/45/61/f0/4561f05d7b3e69d72c46e802431f7be1.png" class="img-fluid rounded"></div>
+      <div class="col-4 p-2"><img src="https://i.pinimg.com/originals/46/1c/c9/461cc9aa6cbf71519a3b6ccba2c82658.png" class="img-fluid rounded"></div>
+      <div class="col-4 p-2"><img src="https://i.pinimg.com/originals/72/e6/34/72e63436f9d01bcb654172515f9fbb58.png" class="img-fluid rounded"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Frases tiernas estilo Pochacco
+const frases = [
+  "Eres tan adorable como Pochacco con moño.",
+  "Tu ternura podría derretir el hielo más frío.",
+  "Si fueras un personaje, serías la versión aún más linda de Pochacco.",
+  "Tu sonrisa ilumina como una tarde rosa de primavera.",
+  "Abrazarte sería como abrazar una nube con orejitas."
+];
+
+// Mostrar frase aleatoria diaria (persistente por fecha)
+const hoy = new Date().toISOString().slice(0, 10);
+const index = hoy.split('-').reduce((acc, val) => acc + parseInt(val), 0) % frases.length;
+document.getElementById('frase-texto').innerText = frases[index];
+</script>
+
+{% endblock %}

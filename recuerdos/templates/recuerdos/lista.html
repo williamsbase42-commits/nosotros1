@@ -1,0 +1,285 @@
+{% extends 'recuerdos/base.html' %}
+
+{% block title %}Recuerdos{% endblock %}
+
+{% block content %}
+  <h2>Recuerdos juntos</h2>
+
+<!-- Filtros -->
+<div class="filtros" style="margin-bottom: 20px;">
+  <select id="filtro-categoria">
+    <option value="todos"> 💕 Todas las categorías</option>
+    {% for c in categorias %}
+      <option value="{{ c.nombre }}">🏷️ {{ c.nombre }}</option>
+    {% endfor %}
+  </select>
+
+  <select id="filtro-anio">
+    <option value="todos">📅 Todos los años</option>
+    {% for anio in anios %}
+      <option value="{{ anio }}">📆 {{ anio }}</option>
+    {% endfor %}
+  </select>
+
+  <button id="btn-filtrar" style="padding: 6px 12px; border: none; background-color: #f0729a; color: white; border-radius: 8px; cursor: pointer;">
+    🔍 Filtrar
+  </button>
+  <button id="toggle-favoritos" style="padding: 6px 12px; border: none; background-color: #ffb6c1; color: #000; border-radius: 8px; cursor: pointer;">
+    💖 Ver solo favoritos
+  </button>
+
+</div>
+
+<div class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+  {% for r in recuerdos %}
+    <div class="bloque-recuerdo"
+     data-categoria="{{ r.categoria.nombre }}"
+     data-anio="{{ r.fecha.year }}"
+     data-id="{{ r.id }}"
+     style="position: relative; border: 1px solid #ddd; border-radius: 12px; padding-top: 30px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); background-color: #fff; text-align: center; transition: transform 0.2s ease;">
+
+         
+           <!-- Botón de favorito -->
+          <button class="favorito-btn" onclick="toggleFavorito('{{ r.id }}')" title="Agregar a favoritos">
+            ❤️
+          </button>
+
+         <h4 style="margin-bottom: 8px; font-size: 1.1rem;">{{ r.titulo }}</h4>
+      {% if r.imagen %}
+        <img src="{{ r.imagen.url }}" alt="{{ r.titulo }}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px;">
+      {% endif %}
+      <a href="{% url 'detalle_recuerdo' r.id %}" style="margin-top: 10px; display: inline-block; padding: 6px 12px; border: none; background-color: #f0729a; color: white; border-radius: 8px; text-decoration: none; transition: background-color 0.2s;">💖 Ver recuerdo</a>
+    </div>
+  {% endfor %}
+</div>
+
+  <style>
+    .bloque-recuerdo:hover {
+      transform: scale(1.02);
+    }
+    select {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-left: 8px;
+    }
+    
+  </style>
+<style>
+  .favorito-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #f44336;
+    z-index: 2;
+  }
+
+  .favorito-btn:hover {
+    background-color: #f0729a;
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  .favorito-btn.active {
+    transform: scale(1.3);
+    color: #ff4081;
+  }
+</style>
+
+<style>
+  .titulo {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 30px;
+    color: #d6336c;
+  }
+
+  .filtros {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .filtros select {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+  }
+
+  #recuerdos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 0 20px;
+  }
+
+  .recuerdo {
+    background: #ffe4ec;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(255, 105, 135, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    animation: fadeIn 0.6s ease;
+  }
+
+  .recuerdo img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .ver-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: #ff80ab;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+
+  .ver-btn:hover {
+    background: #ff4d88;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+  <script>
+  const categoriaSelect = document.getElementById("filtro-categoria");
+  const anioSelect = document.getElementById("filtro-anio");
+  const btnFiltrar = document.getElementById("btn-filtrar");
+  const recuerdos = document.querySelectorAll(".bloque-recuerdo");
+
+  function filtrarRecuerdos() {
+    const categoriaSeleccionada = categoriaSelect.value;
+    const anioSeleccionado = anioSelect.value;
+
+    recuerdos.forEach(recuerdo => {
+      const categoria = recuerdo.getAttribute("data-categoria");
+      const anio = recuerdo.getAttribute("data-anio");
+
+      const coincideCategoria = (categoriaSeleccionada === "todos" || categoria === categoriaSeleccionada);
+      const coincideAnio = (anioSeleccionado === "todos" || anio === anioSeleccionado);
+
+      if (coincideCategoria && coincideAnio) {
+        recuerdo.style.display = "block";
+      } else {
+        recuerdo.style.display = "none";
+      }
+    });
+  }
+
+  btnFiltrar.addEventListener("click", filtrarRecuerdos);
+</script>
+
+<script>
+  document.getElementById("btn-filtrar").addEventListener("click", function () {
+    const categoria = document.getElementById("filtro-categoria").value;
+    const anio = document.getElementById("filtro-anio").value;
+    const recuerdos = document.querySelectorAll(".bloque-recuerdo");
+
+    recuerdos.forEach(recuerdo => {
+      const cat = recuerdo.getAttribute("data-categoria");
+      const year = recuerdo.getAttribute("data-anio");
+
+      const mostrar = 
+        (categoria === "todos" || categoria === cat) &&
+        (anio === "todos" || anio === year);
+
+      recuerdo.style.display = mostrar ? "block" : "none";
+    });
+  });
+</script>
+
+<script>
+  function toggleFavorito(id) {
+    id = parseInt(id); // <-- aseguramos que sea un número
+
+    let favoritos = JSON.parse(localStorage.getItem('favoritos')) || [];
+
+    if (favoritos.includes(id)) {
+      favoritos = favoritos.filter(fav => fav !== id);
+    } else {
+      favoritos.push(id);
+    }
+
+    localStorage.setItem('favoritos', JSON.stringify(favoritos));
+    actualizarIconosFavoritos();
+  }
+
+
+  function actualizarIconosFavoritos() {
+    const favoritos = JSON.parse(localStorage.getItem('favoritos')) || [];
+
+    document.querySelectorAll('.bloque-recuerdo').forEach(bloque => {
+      const id = parseInt(bloque.getAttribute('data-id'));
+      const btn = bloque.querySelector('.favorito-btn');
+      if (favoritos.includes(id)) {
+        btn.classList.add('active');
+        btn.textContent = '💖';
+      } else {
+        btn.classList.remove('active');
+        btn.textContent = '❤️';
+      }
+    });
+  }
+
+  // Al cargar la página
+  document.addEventListener('DOMContentLoaded', actualizarIconosFavoritos);
+</script>
+
+<script>
+  document.getElementById('ver-favoritos').addEventListener('click', () => {
+    const favoritos = JSON.parse(localStorage.getItem('favoritos')) || [];
+    document.querySelectorAll('.bloque-recuerdo').forEach(bloque => {
+      const id = parseInt(bloque.getAttribute('data-id'));
+      if (!favoritos.includes(id)) {
+        bloque.style.display = 'none';
+      } else {
+        bloque.style.display = 'block';
+      }
+    });
+  });
+</script>
+<script>
+  let mostrandoFavoritos = false;
+
+  document.getElementById('toggle-favoritos').addEventListener('click', () => {
+    const favoritos = JSON.parse(localStorage.getItem('favoritos')) || [];
+    const recuerdos = document.querySelectorAll('.bloque-recuerdo');
+
+    if (!mostrandoFavoritos) {
+      // Mostrar solo favoritos
+      recuerdos.forEach(bloque => {
+        const id = parseInt(bloque.getAttribute('data-id'));
+        bloque.style.display = favoritos.includes(id) ? 'block' : 'none';
+      });
+      document.getElementById('toggle-favoritos').textContent = '📂 Ver todos';
+      mostrandoFavoritos = true;
+    } else {
+      // Mostrar todos
+      recuerdos.forEach(bloque => {
+        bloque.style.display = 'block';
+      });
+      document.getElementById('toggle-favoritos').textContent = '💖 Ver solo favoritos';
+      mostrandoFavoritos = false;
+    }
+  });
+</script>
+
+
+
+{% endblock %}

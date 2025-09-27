@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crea Tu Carta de Amor</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: linear-gradient(to right, #ffe0ec, #fad0c4);
+      font-family: 'Georgia', cursive;
+      padding: 20px;
+      color: #880e4f;
+    }
+    .carta-romantica {
+      background: #fff0f5;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom: 200px;
+    }
+    .btn-romantico {
+    position: relative;
+    z-index: 9999;
+    pointer-events: auto;
+    background-color: #f06292;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 10px 5px;
+    }
+
+    .btn-romantico:hover {
+      background-color: #ec407a;
+    }
+    .frase-opcion {
+      background: #ffe6ef;
+      padding: 10px;
+      border-radius: 12px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .frase-opcion:hover {
+      background: #f8bbd0;
+    }
+    #cartaFinal {
+      white-space: pre-line;
+      font-size: 1.2rem;
+      margin-top: 20px;
+    }
+    .titulo-seccion {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ad1457;
+    }
+    .container.carta-romantica {
+    margin-bottom: 200px;
+    }
+
+  </style>
+</head>
+<body>
+  <h2 class="text-center mb-4">Crea Tu Carta de Amor 💌</h2>
+
+  <div class="container carta-romantica">
+    <div id="tituloSeccion" class="titulo-seccion"></div>
+    <div id="contenedor-opciones"></div>
+    <div id="cartaFinal" class="mt-4"></div>
+
+    <div class="text-center">
+      <button id="reiniciarBtn" class="btn-romantico" style="display:none">🔁 Reiniciar</button>
+      <button id="copiarBtn" class="btn-romantico" style="display:none">💾 Copiar Carta</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const secciones = [
+      {
+        titulo: 'Elige un saludo',
+        frases: [
+          'Mi amor querido,',
+          'Hola mi vida hermosa,',
+          'A la persona que más amo,',
+        ]
+      },
+      {
+        titulo: 'Elige una introducción romántica',
+        frases: [
+          'Hoy sentí la necesidad de recordarte cuánto significas para mí.',
+          'A veces las palabras no alcanzan, pero hoy quiero intentarlo.',
+          'Quiero que sepas que cada día a tu lado es un regalo.',
+        ]
+      },
+      {
+        titulo: 'Elige un recuerdo bonito',
+        frases: [
+          'Recuerdo nuestra primera cita y cómo me hiciste sonreír como nunca.',
+          'Aquel abrazo en medio de la lluvia fue mi refugio perfecto.',
+          'Cada mirada tuya tiene un rincón eterno en mi memoria.',
+        ]
+      },
+      {
+        titulo: 'Elige una promesa o deseo',
+        frases: [
+          'Prometo seguir eligiéndote todos los días de mi vida.',
+          'Deseo construir mil recuerdos más a tu lado.',
+          'Mi corazón late con fuerza por un futuro contigo.',
+        ]
+      },
+      {
+        titulo: 'Elige un cierre tierno',
+        frases: [
+          'Con todo mi amor, para siempre.',
+          'Tuyo eternamente.',
+          'Un beso desde lo más profundo de mi alma.',
+        ]
+      }
+    ];
+
+    let carta = [];
+    let paso = 0;
+
+    const contenedor = document.getElementById('contenedor-opciones');
+    const cartaFinal = document.getElementById('cartaFinal');
+    const reiniciarBtn = document.getElementById('reiniciarBtn');
+    const copiarBtn = document.getElementById('copiarBtn');
+    const tituloSeccion = document.getElementById('tituloSeccion');
+
+    function mostrarPaso() {
+      tituloSeccion.textContent = secciones[paso].titulo;
+      contenedor.innerHTML = "";
+      secciones[paso].frases.forEach(frase => {
+        const div = document.createElement('div');
+        div.textContent = frase;
+        div.classList.add('frase-opcion');
+        div.addEventListener('click', () => seleccionarFrase(frase));
+        contenedor.appendChild(div);
+      });
+    }
+
+    function seleccionarFrase(frase) {
+      carta.push(frase);
+      paso++;
+      if (paso < secciones.length) {
+        mostrarPaso();
+      } else {
+        mostrarCarta();
+      }
+    }
+
+    function mostrarCarta() {
+      tituloSeccion.textContent = "Tu carta está lista 💖";
+      contenedor.innerHTML = '';
+      cartaFinal.textContent = carta.join('\n\n');
+      reiniciarBtn.style.display = 'inline-block';
+      copiarBtn.style.display = 'inline-block';
+    }
+
+    reiniciarBtn.addEventListener('click', () => {
+      carta = [];
+      paso = 0;
+      cartaFinal.textContent = '';
+      reiniciarBtn.style.display = 'none';
+      copiarBtn.style.display = 'none';
+      mostrarPaso();
+    });
+
+    copiarBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(carta.join("\n\n"));
+      copiarBtn.textContent = '💾 ¡Copiada!';
+      setTimeout(() => copiarBtn.textContent = '💾 Copiar Carta', 2000);
+    });
+
+    mostrarPaso();
+    });
+  </script>
+</body>
+</html>

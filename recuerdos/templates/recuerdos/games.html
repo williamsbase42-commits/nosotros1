@@ -1,0 +1,151 @@
+{% extends 'recuerdos/base.html' %}
+{% load static %}
+{% block content %}
+
+<h2 class="titulo-romantico text-center my-4">¿Qué quieres jugar hoy, mi amor? 💖</h2>
+
+<div class="container juegos-grid">
+  <div class="juego-card" onclick="mostrarJuego('sudoku')">
+    <img src="{% static 'img/sudoku_icono.png' %}" alt="Sudoku del Amor">
+    <h3>Sudoku del Amor</h3>
+  </div>
+
+  <div class="juego-card" onclick="mostrarJuego('puzzle')">
+    <img src="{% static 'img/puzzle_icono.png' %}" alt="Rompecabezas Juntos">
+    <h3>Rompecabezas Juntos</h3>
+  </div>
+
+  <div class="juego-card" onclick="mostrarJuego('ruleta')">
+    <img src="{% static 'img/ruleta_icono.png' %}" alt="Ruleta de Cupones">
+    <h3>Ruleta de Cupones</h3>
+  </div>
+
+  <div class="juego-card" onclick="mostrarJuego('mini_juego')">
+    <img src="{% static 'img/mini_icono.png' %}" alt="Mini Juego">
+    <h3>Mini Juego</h3>
+  </div>
+
+  <div class="juego-card" onclick="mostrarJuego('tic_tac_toe')">
+    <img src="{% static 'img/tic_tac_toe.png' %}" alt="El Gato del Amor">
+    <h3>Gato</h3>
+  </div>
+
+  <div class="juego-card" onclick="mostrarJuego('rompefrases')">
+    <img src="{% static 'img/rompefrases.png' %}" alt="Rompefrases del Amor">
+    <h3>Rompefrases del Amor</h3>
+  </div>
+
+  <div class="juego-card" onclick="mostrarJuego('carta_amor')">
+    <img src="{% static 'img/carta_amor.png' %}" alt="Cartitas de Amor">
+    <h3>Cartitas de Amor</h3>
+  </div>
+
+  <div class="juego-card" onclick="mostrarJuego('memorama_pochacco')">
+    <img src="{% static 'img/memorama.png' %}" alt="Memorama Pochacco">
+    <h3>Memorama Pochacco</h3>
+  </div>
+</div>
+
+<!-- Contenedores de juegos -->
+<div id="sudoku" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/sudoku.html' %}
+</div>
+
+<div id="puzzle" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/puzzle.html' %}
+</div>
+
+<div id="ruleta" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/ruleta_cupones.html' %}
+</div>
+
+<div id="mini_juego" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/mini_juego.html' %}
+</div>
+
+<div id="tic_tac_toe" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/tic_tac_toe.html' %}
+</div>
+
+<div id="rompefrases" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/rompefrases.html' %}
+</div>
+
+<div id="carta_amor" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/carta_amor.html' %}
+</div>
+
+<div id="memorama_pochacco" class="juego-contenedor" style="display: none;">
+  {% include 'recuerdos/juegos/memorama_pochacco.html' %}
+</div>
+
+<script>
+  let juegoActivo = null;
+
+  function mostrarJuego(id) {
+    const juego = document.getElementById(id);
+
+    // Si se presiona el mismo juego activo, lo ocultamos
+    if (juegoActivo === id) {
+      juego.style.display = 'none';
+      juegoActivo = null;
+    } else {
+      // Ocultamos todos los juegos
+      document.querySelectorAll('.juego-contenedor').forEach(div => div.style.display = 'none');
+      // Mostramos el juego seleccionado
+      juego.style.display = 'block';
+      juegoActivo = id;
+
+      // Hacemos scroll suave al juego
+      window.scrollTo({ top: juego.offsetTop - 100, behavior: 'smooth' });
+    }
+  }
+</script>
+
+
+<style>
+  
+    .juegos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  justify-items: center;
+  margin-bottom: 40px;
+}
+
+.juego-card {
+  background: #fff0f6;
+  border-radius: 20px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(255, 192, 203, 0.4);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 220px;
+}
+
+.juego-card img {
+  width: 80px;
+  margin-bottom: 10px;
+}
+
+.juego-card h3 {
+  color: #c2185b;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.juego-card:hover {
+  transform: scale(1.05);
+  background: #ffe6ef;
+}
+
+.titulo-romantico {
+  color: #d81b60;
+  font-family: 'Dancing Script', cursive;
+  font-size: 2.5rem;
+}
+
+</style>
+{% endblock %}

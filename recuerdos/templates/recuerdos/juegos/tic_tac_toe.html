@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="tic-tac-toe-romantico">
+  <h3>El Gato del Amor</h3>
+  <div id="tablero-tic-tac-toe">
+    <!-- Se generará dinámicamente con JS -->
+  </div>
+  <p id="mensaje-ganador"></p>
+  <button onclick="reiniciarTicTacToe()" class="btn-romantico">Reiniciar</button>
+</div>
+
+<style>
+    .tic-tac-toe-romantico {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+#tablero-tic-tac-toe {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  gap: 10px;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.celda-tic {
+  width: 100px;
+  height: 100px;
+  background-color: #ffeef0;
+  border: 2px solid #ff99aa;
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background 0.3s;
+}
+
+.celda-tic:hover {
+  background-color: #ffd6dd;
+}
+
+#mensaje-ganador {
+  font-size: 1.2rem;
+  margin: 10px 0;
+  color: #c2185b;
+}
+</style>
+
+<script>
+  let turno = '❤️';
+  let tablero = Array(9).fill('');
+  const combinacionesGanadoras = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+
+  function crearTablero() {
+    const contenedor = document.getElementById('tablero-tic-tac-toe');
+    contenedor.innerHTML = '';
+    tablero = Array(9).fill('');
+    turno = '❤️';
+    document.getElementById('mensaje-ganador').textContent = '';
+
+    for (let i = 0; i < 9; i++) {
+      const celda = document.createElement('div');
+      celda.className = 'celda-tic';
+      celda.dataset.index = i;
+      celda.onclick = () => jugar(i);
+      contenedor.appendChild(celda);
+    }
+  }
+
+  function jugar(index) {
+    if (tablero[index] !== '') return;
+    tablero[index] = turno;
+    document.querySelectorAll('.celda-tic')[index].textContent = turno;
+    if (verificarGanador()) {
+      document.getElementById('mensaje-ganador').textContent = `${turno} ganó 😍`;
+      bloquearTablero();
+      return;
+    }
+    turno = turno === '❤️' ? '💙' : '❤️';
+  }
+
+  function verificarGanador() {
+    return combinacionesGanadoras.some(comb => 
+      comb.every(i => tablero[i] === turno)
+    );
+  }
+
+  function bloquearTablero() {
+    document.querySelectorAll('.celda-tic').forEach(c => c.onclick = null);
+  }
+
+  function reiniciarTicTacToe() {
+    crearTablero();
+  }
+
+  // Inicializar
+  document.addEventListener('DOMContentLoaded', crearTablero);
+</script>
+
+</body>
+</html>

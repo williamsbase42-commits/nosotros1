@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Corazones flotando</title>
+
+  <style>
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ffe6f0;
+  overflow: hidden;
+  height: 100vh;
+  position: relative;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.contenedor-corazones {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.corazon {
+  position: absolute;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  opacity: 0.9;
+  animation-fill-mode: forwards;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.btn-volver {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  background-color: #ff69b4;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 30px;
+  text-decoration: none;
+  font-size: 16px;
+  box-shadow: 0 0 10px #ff69b4;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-volver:hover {
+  background-color: #ff85c1;
+}
+  .texto-romantico {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    color: #ffffff;
+    font-size: 1.8rem; /* Texto más pequeño */
+    font-weight: 700;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 10px #ff6b81;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #texto-escribir {
+    margin: 0;
+  }
+
+  .cursor {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #000000;
+    margin-left: 3px;
+    animation: parpadeo 1s infinite;
+    user-select: none;
+  }
+
+  @keyframes parpadeo {
+    0%, 50% {
+      opacity: 1;
+    }
+    51%, 100% {
+      opacity: 0;
+    }
+  }
+  </style>
+</head>
+<body>
+
+  <div class="contenedor-corazones"></div>
+
+  <div class="texto-romantico">
+  <h1 id="texto-escribir"></h1><span class="cursor">|</span>
+</div>
+
+  <!-- Botón para volver a inicio -->
+  <a href="{% url 'inicio' %}">
+    <button class="btn-volver">Volver al inicio 💞</button>
+  </a>
+
+  <script>
+const contenedor = document.querySelector('.contenedor-corazones');
+
+const svgCorazon = `
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+    2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3
+    19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+</svg>
+`;
+
+function crearCorazon() {
+  const corazon = document.createElement('div');
+  corazon.classList.add('corazon');
+
+  // Insertar SVG dentro del div
+  corazon.innerHTML = svgCorazon;
+
+  // Posición horizontal aleatoria
+  corazon.style.left = Math.random() * 100 + 'vw';
+
+  // Tamaño aleatorio entre 15 y 30 px
+  const size = Math.random() * 15 + 15;
+  corazon.style.width = size + 'px';
+  corazon.style.height = size + 'px';
+
+  // Color aleatorio (rosas y rojos)
+  const colores = ['#ff2d55', '#ff6b81', '#ff1493', '#ff85c1', '#e75480'];
+  corazon.style.color = colores[Math.floor(Math.random() * colores.length)];
+
+  // Rotación inicial aleatoria (-30 a 30 grados)
+  const rotacionInicial = (Math.random() * 60) - 30;
+  corazon.style.transform = `rotate(${rotacionInicial}deg) scale(0)`;
+
+  contenedor.appendChild(corazon);
+
+  // Animación personalizada: movimiento hacia arriba, zigzag horizontal y crecimiento
+  let start = null;
+  const duracion = 9000 + Math.random() * 3000; // entre 9 y 12 segundos
+  const distanciaY = window.innerHeight + 50;
+  const desplazamientoX = (Math.random() * 100) - 50; // zigzag horizontal ±50px
+
+  function animar(timestamp) {
+    if (!start) start = timestamp;
+    const progreso = timestamp - start;
+
+    // Progreso normalizado entre 0 y 1
+    let t = Math.min(progreso / duracion, 1);
+
+    // Movimiento vertical desde abajo hacia arriba
+    const posY = distanciaY * t;
+
+    // Movimiento horizontal zigzag (onda senoidal)
+    const posX = desplazamientoX * Math.sin(t * Math.PI * 4); // 4 oscilaciones
+
+    // Escala: crece de 0 a 1.1 y luego baja a 1 para dar efecto "pop"
+    let escala = t < 0.3 ? t / 0.3 * 1.1 : 1.1 - ((t - 0.3) / 0.7) * 0.1;
+
+    // Opacidad disminuye al final
+    let opacidad = 1 - t;
+
+    corazon.style.transform = `translate(${posX}px, -${posY}px) rotate(${rotacionInicial + t * 45}deg) scale(${escala})`;
+    corazon.style.opacity = opacidad;
+
+    if (t < 1) {
+      requestAnimationFrame(animar);
+    } else {
+      corazon.remove();
+    }
+  }
+
+  requestAnimationFrame(animar);
+}
+
+// Crear muchos corazones a intervalos pequeños para llenar la pantalla poco a poco
+setInterval(() => {
+  // Puedes ajustar la cantidad para hacerlo más intenso
+  const cantidadPorIntervalo = 30;
+  for (let i = 0; i < cantidadPorIntervalo; i++) {
+    crearCorazon();
+  }
+}, 190);
+
+  // Efecto máquina de escribir
+  const texto = "Amor eterno, flotando en cada latido ❤️.";
+  const textoElemento = document.getElementById('texto-escribir');
+  let index = 0;
+
+  function escribir() {
+    if (index < texto.length) {
+      textoElemento.textContent += texto.charAt(index);
+      index++;
+      setTimeout(escribir, 120);
+    }
+  }
+
+  escribir();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <section class="juego-romantico">
+  <h2 class="titulo-juego">🎮 Ayuda a Williams a llegar hasta Ayelen 💖</h2>
+
+  <div class="contenedor-juego">
+    <canvas id="juegoCanvas" width="720" height="240"></canvas>
+    <button id="btnIniciar">💘 Iniciar Juego</button>
+    <div id="mensajeFinal" class="oculto">
+      <p>¡Felicidades! Williams logró abrazar a Ayelen 💖</p>
+      <button onclick="location.reload()">🔁 Jugar de Nuevo</button>
+    </div>
+  </div>
+
+  <audio id="musicaFondo" loop>
+    <source src="/static/musica/love_theme_chiptune.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const canvas = document.getElementById("juegoCanvas");
+    const ctx = canvas.getContext("2d");
+    const musica = document.getElementById("musicaFondo");
+    const btnIniciar = document.getElementById("btnIniciar");
+    const mensajeFinal = document.getElementById("mensajeFinal");
+
+    const jugadorImg = new Image();
+    jugadorImg.src = "/static/img/williams_pixels.png";
+
+    const ayelenImg = new Image();
+    ayelenImg.src = "/static/img/ayelen_pixels.png";
+
+    const sueloY = 200;
+    const gravedad = 1;
+
+    const jugador = {
+      x: 20,
+      y: sueloY,
+      width: 32,
+      height: 32,
+      vy: 0,
+      saltando: false
+    };
+
+    const ayelen = {
+      x: 640,
+      y: sueloY,
+      width: 32,
+      height: 32
+    };
+
+    const obstaculos = [
+      { x: 180, y: sueloY + 8, width: 30, height: 10 },
+      { x: 340, y: sueloY + 8, width: 30, height: 10 },
+      { x: 500, y: sueloY - 10, width: 30, height: 40 },
+    ];
+
+    let teclas = {};
+    let juegoGanado = false;
+    let juegoIniciado = false;
+
+    document.addEventListener("keydown", e => {
+      teclas[e.key] = true;
+      if (["ArrowUp", " ", "w"].includes(e.key)) e.preventDefault();
+    });
+
+    document.addEventListener("keyup", e => teclas[e.key] = false);
+
+    btnIniciar.addEventListener("click", () => {
+      juegoIniciado = true;
+      btnIniciar.style.display = "none";
+      musica.volume = 0.2;
+      musica.play();
+      loop();
+    });
+
+    function actualizar() {
+      if (!juegoIniciado || juegoGanado) return;
+
+      if (teclas["ArrowRight"] || teclas["d"]) jugador.x += 1.5;
+      if (teclas["ArrowLeft"] || teclas["a"]) jugador.x -= 1.5;
+
+      if ((teclas["ArrowUp"] || teclas["w"] || teclas[" "]) && !jugador.saltando) {
+        jugador.vy = -12;
+        jugador.saltando = true;
+      }
+
+      jugador.vy += gravedad;
+      jugador.y += jugador.vy;
+
+      if (jugador.y >= sueloY) {
+        jugador.y = sueloY;
+        jugador.vy = 0;
+        jugador.saltando = false;
+      }
+
+      for (let obs of obstaculos) {
+        if (
+          jugador.x < obs.x + obs.width &&
+          jugador.x + jugador.width > obs.x &&
+          jugador.y + jugador.height > obs.y
+        ) {
+          jugador.x -= 2;
+        }
+      }
+
+      if (
+        jugador.x + jugador.width >= ayelen.x &&
+        jugador.y === sueloY
+      ) {
+        juegoGanado = true;
+        mostrarFinal();
+      }
+    }
+
+    function mostrarFinal() {
+      mensajeFinal.classList.remove("oculto");
+    }
+
+    function dibujar() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#9acd32";
+      ctx.fillRect(0, sueloY + 32, canvas.width, 40);
+
+      ctx.fillStyle = "#8b0000";
+      for (let obs of obstaculos) {
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+      }
+
+      ctx.drawImage(jugadorImg, jugador.x, jugador.y, jugador.width, jugador.height);
+      ctx.drawImage(ayelenImg, ayelen.x, ayelen.y, ayelen.width, ayelen.height);
+    }
+
+    function loop() {
+      actualizar();
+      dibujar();
+      if (!juegoGanado) requestAnimationFrame(loop);
+    }
+  </script>
+</section>
+
+</body>
+</html>

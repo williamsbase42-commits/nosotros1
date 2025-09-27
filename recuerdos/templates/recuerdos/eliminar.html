@@ -1,0 +1,12 @@
+{% extends 'recuerdos/base.html' %}
+
+{% block title %}Eliminar Recuerdo{% endblock %}
+
+{% block content %}
+  <h2>¿Estás seguro de que quieres eliminar "{{ recuerdo.titulo }}"?</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit">Sí, eliminar</button>
+    <a href="/">Cancelar</a>
+  </form>
+{% endblock %}

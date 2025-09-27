@@ -1,0 +1,7 @@
+<h2>Editor Secreto 💻</h2>
+<form method="post">
+  {% csrf_token %}
+  <input type="password" name="password" placeholder="Contraseña secreta">
+  <button type="submit">Entrar</button>
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+</form>

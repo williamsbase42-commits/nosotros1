@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <section class="rompecabezas">
+  <h2>🧩 Arma el rompecabezas</h2>
+
+  <!-- Contenedor que une el puzzle y el ejemplo uno al lado del otro -->
+  <div class="rompecabezas-contenedor">
+    <!-- Puzzle interactivo -->
+    <div id="juego-rompecabezas" class="puzzle-juego"></div>
+
+    <!-- Puzzle ejemplo armado -->
+    <div id="ejemplo-puzzle" class="puzzle-ejemplo"></div>
+  </div>
+
+  <!-- Mensaje de estado -->
+  <p id="mensaje-puzzle"></p>
+
+  <!-- Botones -->
+  <div class="botones-rompecabezas">
+    <button id="btn-cambiar-puzzle">🔄 Cambiar Rompecabezas</button>
+    <button id="btn-auto-puzzle">▶️ Auto: OFF</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+  // URLs de imágenes del puzzle
+  const imagenesPuzzle = [
+    "{% static 'img/fondo_pochacco.jpg' %}",
+    "{% static 'img/pochacco_kiss.jpg' %}",
+    "{% static 'img/ella_y_yo1.png' %}",
+    "{% static 'img/ghibli.png' %}",
+    "{% static 'img/chibi_zoro.jpg' %}",
+    "{% static 'img/pochacco_flecha.jpg' %}"
+  ];
+
+  const filas = 4;
+  const columnas = 4;
+  const totalPiezas = filas * columnas;
+  const tamPieza = 320 / columnas; // tamaño en px (320x320 imagen)
+
+  const puzzle = document.getElementById('juego-rompecabezas');
+  const ejemplo = document.getElementById('ejemplo-puzzle');
+  const mensaje = document.getElementById('mensaje-puzzle');
+  const btnCambiar = document.getElementById('btn-cambiar-puzzle');
+  const btnAuto = document.getElementById('btn-auto-puzzle');
+
+  let modoAuto = false;
+  let imagenActual = null;
+  let juegoActivo = false;
+
+  // Mezclar array (Fisher-Yates)
+  function mezclarArray(array) {
+    for (let i = array.length -1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // Crear piezas del puzzle (desordenado o no)
+  function crearPiezas(container, imagen, desordenado = true) {
+    container.innerHTML = '';
+    let indices = Array.from(Array(totalPiezas).keys());
+    if (desordenado) {
+      indices = mezclarArray(indices);
+    }
+
+    indices.forEach((idx, pos) => {
+      const pieza = document.createElement('div');
+      pieza.classList.add('pieza');
+      pieza.setAttribute('draggable', desordenado ? 'true' : 'false');
+      pieza.dataset.posReal = idx; // posición correcta
+      pieza.dataset.posActual = pos; // posición actual en grid
+
+      const fila = Math.floor(idx / columnas);
+      const col = idx % columnas;
+      pieza.style.backgroundImage = `url(${imagen})`;
+      pieza.style.backgroundPosition = `-${col * tamPieza}px -${fila * tamPieza}px`;
+      pieza.style.backgroundSize = `${320}px ${320}px`;
+      pieza.style.width = `${tamPieza}px`;
+      pieza.style.height = `${tamPieza}px`;
+      pieza.style.border = '2px solid #ccc';
+      pieza.style.borderRadius = '8px';
+      pieza.style.cursor = desordenado ? 'grab' : 'default';
+      pieza.style.userSelect = 'none';
+
+      container.appendChild(pieza);
+    });
+  }
+
+  // Verificar si el puzzle está completo
+  function chequearPuzzle() {
+    const piezas = puzzle.querySelectorAll('.pieza');
+    for (const pieza of piezas) {
+      if (pieza.dataset.posReal !== pieza.dataset.posActual) return false;
+    }
+    return true;
+  }
+
+  // Mostrar mensaje y botón para nuevo puzzle (modo auto)
+  function mostrarBotonNuevoPuzzle() {
+    if (document.getElementById('btn-nuevo-puzzle')) return; // Evitar duplicados
+
+    const btnNuevo = document.createElement('button');
+    btnNuevo.id = 'btn-nuevo-puzzle';
+    btnNuevo.textContent = '🧩 Armar otro puzzle';
+    btnNuevo.style.marginTop = '10px';
+    btnNuevo.style.padding = '8px 16px';
+    btnNuevo.style.fontSize = '1rem';
+    btnNuevo.style.borderRadius = '10px';
+    btnNuevo.style.border = '2px solid #ff69b4';
+    btnNuevo.style.backgroundColor = '#fff0f6';
+    btnNuevo.style.cursor = 'pointer';
+
+    btnNuevo.onclick = () => {
+      btnNuevo.remove();
+      cargarPuzzleAleatorio();
+    };
+    puzzle.parentNode.appendChild(btnNuevo);
+  }
+
+  // Cargar puzzle aleatorio (y ejemplo)
+  function cargarPuzzleAleatorio() {
+    if (juegoActivo) {
+      if (!confirm("¿Quieres cambiar de puzzle y perder el actual?")) return;
+    }
+    mensaje.textContent = '';
+    const idx = Math.floor(Math.random() * imagenesPuzzle.length);
+    imagenActual = imagenesPuzzle[idx];
+    crearPiezas(puzzle, imagenActual, true);
+    crearPiezas(ejemplo, imagenActual, false);
+    juegoActivo = true;
+  }
+
+  // Drag & Drop
+  let piezaArrastrada = null;
+
+  puzzle.addEventListener('dragstart', e => {
+    if (e.target.classList.contains('pieza')) {
+      piezaArrastrada = e.target;
+      setTimeout(() => piezaArrastrada.style.visibility = 'hidden', 0);
+    }
+  });
+
+  puzzle.addEventListener('dragend', e => {
+    if (piezaArrastrada) piezaArrastrada.style.visibility = 'visible';
+  });
+
+  puzzle.addEventListener('dragover', e => {
+    e.preventDefault();
+  });
+
+    puzzle.addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.target.classList.contains('pieza') && piezaArrastrada) {
+        const piezaDestino = e.target;
+
+        // Crear una referencia del nodo siguiente para insertar correctamente
+        const siguiente = piezaDestino.nextSibling === piezaArrastrada ? piezaDestino : piezaDestino.nextSibling;
+
+        // Mover piezaArrastrada a la posición de piezaDestino
+        puzzle.insertBefore(piezaArrastrada, siguiente);
+
+        // Actualizar ordenActual leyendo el nuevo orden desde el DOM
+        ordenActual = Array.from(puzzle.children).map(p => Number(p.dataset.posReal));
+
+        // Comprobar si ganó
+        if (ordenActual.every((val, idx) => val === idx)) {
+        mensaje.textContent = "🎉 ¡Felicidades! Has armado el rompecabezas.";
+        mostrarMensajeCompletado(); // O lo que desees mostrar
+        } else {
+        mensaje.textContent = "";
+        }
+    }
+
+    // Intercambiar posiciones en DOM
+    const hijos = Array.from(puzzle.children);
+    const idxArrastrada = hijos.indexOf(piezaArrastrada);
+    const idxDestino = hijos.indexOf(piezaDestino);
+
+    if (idxArrastrada < idxDestino) {
+      puzzle.insertBefore(piezaDestino, piezaArrastrada);
+      puzzle.insertBefore(piezaArrastrada, hijos[idxDestino]);
+    } else {
+      puzzle.insertBefore(piezaArrastrada, piezaDestino);
+      puzzle.insertBefore(piezaDestino, hijos[idxArrastrada]);
+    }
+
+    // Actualizar dataset posActual según nuevo orden
+    Array.from(puzzle.children).forEach((p, i) => {
+      p.dataset.posActual = i.toString();
+    });
+
+    // Verificar si completó el puzzle
+    if (chequearPuzzle()) {
+      juegoActivo = false;
+      mensaje.textContent = "🎉 ¡Felicidades! Has armado el rompecabezas.";
+      if (modoAuto) {
+        mostrarBotonNuevoPuzzle();
+      }
+    } else {
+      mensaje.textContent = '';
+      // Remover botón nuevo puzzle si existe y no está completo
+      const btnNuevo = document.getElementById('btn-nuevo-puzzle');
+      if (btnNuevo) btnNuevo.remove();
+    }
+
+    piezaArrastrada = null;
+  });
+
+  // Botones para cambiar puzzle y modo auto
+  btnCambiar.addEventListener('click', () => {
+    cargarPuzzleAleatorio();
+  });
+
+  btnAuto.addEventListener('click', () => {
+    modoAuto = !modoAuto;
+    btnAuto.textContent = modoAuto ? '▶️ Auto: ON' : '▶️ Auto: OFF';
+    if (!modoAuto) {
+      const btnNuevo = document.getElementById('btn-nuevo-puzzle');
+      if (btnNuevo) btnNuevo.remove();
+    }
+  });
+
+  // Iniciar primera carga
+  cargarPuzzleAleatorio();
+});
+  </script>
+
+  <style>
+  /* --- Rompecabezas --- */
+.rompecabezas-contenedor {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  flex-wrap: nowrap; /* evita que se bajen */
+  overflow-x: auto; /* en caso de que no quepan, agrega scroll horizontal */
+  margin: 30px auto;
+  max-width: 100%;
+}
+
+/* Ya tenías esto, lo dejamos igual para ambos */
+#juego-rompecabezas, #ejemplo-puzzle {
+  flex-shrink: 0;
+  min-height: 320px;
+  width: 320px;
+  height: 320px;
+  border: 3px solid #f06292;
+  border-radius: 15px;
+  background: #fce4ec;
+  box-shadow: 0 0 20px #f48fb1;
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.rompecabezas h2 {
+  text-align: center;
+  font-size: 2em;
+  color: #d81b60;
+}
+
+#mensaje-puzzle {
+  font-weight: bold;
+  color: green;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.botones-rompecabezas {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.botones-rompecabezas button {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid #ff69b4;
+  background-color: #fff0f6;
+  cursor: pointer;
+  margin: 5px;
+}
+.puzzle-juego {
+  order: 1;
+}
+
+.puzzle-ejemplo {
+  order: 2;
+}
+</style>
+</section>
+
+</body>
+</html>
