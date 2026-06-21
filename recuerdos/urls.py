@@ -23,5 +23,6 @@ urlpatterns = [
     path('games/', views.games_view, name='games'),
     path('zona-zoro/', views.zona_zoro, name='zona_zoro'),
     path('rincon-pochacco/', views.rincon_pochacco, name='rincon_pochacco'),
-
+    path('manifest.webmanifest', views.manifest, name='manifest'),
+    path('service-worker.js', views.service_worker, name='service_worker'),
 ]

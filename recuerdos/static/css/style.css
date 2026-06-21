@@ -1,14 +1,14 @@
     body {
       font-family: 'Quicksand', sans-serif;
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       color: #333;
-      background-image: url("{% static 'img/fondo_pochacco.jpg' %}");
+      background-image: url("../img/fondo_pochacco.jpg");
       background-repeat: no-repeat;
-      background-size: cover; /* Esto hará que se ajuste a lo ancho y alto */
+      background-size: cover;
       background-position: center center;
-      background-attachment: fixed; /* Para efecto parallax suave */
+      background-attachment: scroll;
       opacity: 0.97;
-      
     }
     header {
       background: #ffadc3;
@@ -92,12 +92,13 @@ button:hover, a.button:hover {
 
 /* Filtros románticos para fondo */
 body {
-  background: url('/static/img/romantic_bg.jpg') no-repeat center center fixed;
+  background: url('../img/fondo_pochacco.jpg') no-repeat center center;
   background-size: cover;
   filter: brightness(0.9) contrast(1.1) saturate(1.2);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #3a1c1c;
-  padding: 30px;
+  padding: 0;
+  min-height: 100vh;
 }
 
 .pdf-dropdown {
@@ -3056,5 +3057,227 @@ h1 {
 @media screen and (min-width: 1025px) {
   h1 {
       font-size: 2em;
+  }
+}
+
+/* ===== Layout responsive + PWA ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.site-header {
+  background: #ffadc3;
+  color: white;
+  padding: 0.75rem 1rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  box-shadow: 0 4px 16px rgba(209, 75, 119, 0.25);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  line-height: 1.2;
+}
+
+.main-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.main-nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.main-nav a:hover,
+.main-nav a:focus-visible {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.nav-icon-link img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.nav-toggle,
+.pwa-install-btn {
+  border: none;
+  border-radius: 999px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.45rem 0.85rem;
+  font-size: 1rem;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  font-weight: 700;
+}
+
+.pwa-install-btn {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.content {
+  padding: 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pdf-dropdown {
+  width: 100%;
+  max-width: 260px;
+}
+
+.pdf-dropdown-content {
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 260px);
+}
+
+.modo-btn {
+  top: auto;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  right: calc(1rem + env(safe-area-inset-right, 0px));
+}
+
+.modo-msg {
+  top: auto;
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  right: calc(1rem + env(safe-area-inset-right, 0px));
+  max-width: min(220px, 70vw);
+  font-size: 12px;
+}
+
+.sticker,
+.pochacco1,
+.pochacco2 {
+  display: none;
+}
+
+.love-footer {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+@media screen and (max-width: 768px) {
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .main-nav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .main-nav.open {
+    display: flex;
+  }
+
+  .main-nav a,
+  .pdf-dropdown {
+    width: 100%;
+    max-width: none;
+  }
+
+  .pdf-dropdown-content {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .content {
+    padding: 0.85rem;
+  }
+
+  button,
+  a.button,
+  .pdf-dropdown-button {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  #mapa,
+  .mapa-container {
+    min-height: 280px;
+    width: 100%;
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .nav-toggle {
+    display: none;
+  }
+
+  .sticker {
+    display: block;
+  }
+}
+
+@media (hover: none) {
+  button:hover,
+  a.button:hover,
+  .main-nav a:hover {
+    transform: none;
   }
 }

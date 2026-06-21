@@ -12,6 +12,9 @@ from reportlab.lib.pagesizes import letter
 from django.http import HttpResponse
 from reportlab.lib.utils import ImageReader
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.views.decorators.cache import cache_control
+from django.templatetags.static import static
 import os
 import random
 
@@ -32,7 +35,7 @@ def check_password(request):
 def login_editor(request):
     error = None
     if request.method == "POST":
-        if request.POST.get("password") == "amorsecreto2025":  # cámbialo a uno privado
+        if request.POST.get("password") == settings.EDITOR_PASSWORD:
             request.session['editor_autorizado'] = True
             return redirect("editor_oculto")
         else:
@@ -47,6 +50,9 @@ def editor_oculto(request):
 @user_passes_test(check_password)
 def subir_musica(request):
     mensaje = ""
+    if not settings.DEBUG:
+        mensaje = "Subida de música deshabilitada en producción."
+        return render(request, "editor/subir_musica.html", {"mensaje": mensaje})
     if request.method == "POST" and request.FILES.get("archivo"):
         archivo = request.FILES["archivo"]
         ruta = os.path.join(settings.BASE_DIR, "static/musica", archivo.name)
@@ -344,3 +350,24 @@ def zona_zoro(request):
 
 def rincon_pochacco(request):
     return render(request, 'recuerdos/rincon_pochacco.html')
+
+
+def _pwa_context():
+    return {
+        'icon_192': static('img/icon-192.png'),
+        'icon_512': static('img/icon-512.png'),
+        'css_url': static('css/style.css'),
+        'fondo_url': static('img/fondo_pochacco.jpg'),
+        'pochacco_url': static('img/pochacco_face.jpg'),
+    }
+
+
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
+def service_worker(request):
+    content = render_to_string('service-worker.js', _pwa_context(), request=request)
+    return HttpResponse(content, content_type='application/javascript')
+
+
+def manifest(request):
+    content = render_to_string('manifest.webmanifest', _pwa_context(), request=request)
+    return HttpResponse(content, content_type='application/manifest+json')

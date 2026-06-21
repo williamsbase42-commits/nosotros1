@@ -4,6 +4,16 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#d14b77">
+  <meta name="description" content="Nuestro rincón de recuerdos, música y amor">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Nosotros">
+  <link rel="manifest" href="{% url 'manifest' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/icon-192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/icon-512.png' %}">
   <title>{% block title %} Nosotros 💕{% endblock %}</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
@@ -63,22 +73,30 @@
 <body>
   <div id="estrellas"></div>
   <div id="nubes"></div>
-<p class="modo-msg">☀️ ¡Modo Día activo! Cambia a 🌙 para ver las estrellas.</p>
 
-  <header>
-    <h1>💕 NOSOTROS 💖</h1>
-    <nav>
-      <a href="{% url 'inicio' %}">Inicio</a> | <a href="{% url 'lista_recuerdos' %}">Recuerdos</a> | 
-      <a href="/nuevo/">Agregar Recuerdo</a> | <a href="{% url 'pagina_romantica' %}">🌸</a> | 
-      <a href="{% url 'recuerdos_favoritos' %}">💖 Favoritos</a> | <a href="{% url 'games' %}">👾Juegos</a> |
-      <a href="{% url 'zona_zoro' %}" title="Zona Zoro">
-      <img src="{% static 'img/zoro_pixel.png' %}" alt="Zoro" style="height: 32px; width: auto; margin-top: -5px;"></a> | 
-      <a class="nav-link" href="{% url 'rincon_pochacco' %}">
-    <img src="{% static 'img/pochacco_face.jpg' %}" width="30" style="border-radius: 50%;" alt="Pochacco"></a> | <br>
-
-
+  <header class="site-header">
+    <div class="header-top">
+      <h1>💕 NOSOTROS 💖</h1>
+      <div class="header-actions">
+        <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden>📲 Instalar</button>
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      </div>
+    </div>
+    <nav class="main-nav" id="mainNav">
+      <a href="{% url 'inicio' %}">Inicio</a>
+      <a href="{% url 'lista_recuerdos' %}">Recuerdos</a>
+      <a href="/nuevo/">Agregar Recuerdo</a>
+      <a href="{% url 'pagina_romantica' %}">🌸</a>
+      <a href="{% url 'recuerdos_favoritos' %}">💖 Favoritos</a>
+      <a href="{% url 'games' %}">👾 Juegos</a>
+      <a href="{% url 'zona_zoro' %}" title="Zona Zoro" class="nav-icon-link">
+        <img src="{% static 'img/zoro_pixel.png' %}" alt="Zoro">
+      </a>
+      <a href="{% url 'rincon_pochacco' %}" class="nav-icon-link">
+        <img src="{% static 'img/pochacco_face.jpg' %}" alt="Pochacco">
+      </a>
       <div class="pdf-dropdown" id="pdfDropdown">
-        <button class="pdf-dropdown-button">📥 Exportar Recuerdos PDF</button>
+        <button type="button" class="pdf-dropdown-button">📥 Exportar PDF</button>
         <div class="pdf-dropdown-content">
           <p><a href="{% url 'exportar_pdf' %}">Todos los recuerdos</a></p>
           <p><strong>Por categoría:</strong></p>
@@ -91,7 +109,6 @@
           {% endfor %}
         </div>
       </div>
-      <li></li>
     </nav>
   </header>
   <div class="content">
@@ -103,10 +120,14 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    const mapEl = document.getElementById("mapa");
+    if (!mapEl) return;
+
     const latInput = document.getElementById("id_latitud");
     const lngInput = document.getElementById("id_longitud");
+    if (!latInput || !lngInput) return;
 
-    let defaultLat = latInput.value || -33.4489; // Santiago de Chile por defecto
+    let defaultLat = latInput.value || -33.4489;
     let defaultLng = lngInput.value || -70.6693;
 
     const map = L.map("mapa").setView([defaultLat, defaultLng], 13);
@@ -132,16 +153,19 @@
       latInput.value = lat.toFixed(6);
       lngInput.value = lng.toFixed(6);
     });
+
+    mapEl.style.opacity = 0;
+    setTimeout(() => {
+      mapEl.style.transition = "opacity 1s ease";
+      mapEl.style.opacity = 1;
+    }, 100);
   });
 </script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const mapa = document.getElementById("mapa");
-    mapa.style.opacity = 0;
-    setTimeout(() => { mapa.style.transition = "opacity 1s ease"; mapa.style.opacity = 1; }, 100);
-
     const btn = document.querySelector("button.button");
+    if (!btn) return;
     btn.addEventListener("mouseenter", () => btn.style.transform = "scale(1.1)");
     btn.addEventListener("mouseleave", () => btn.style.transform = "scale(1)");
   });
@@ -149,23 +173,22 @@
 
 
 <script>
-  document.querySelector('.pdf-dropdown-button').addEventListener('click', function() {
-    const dropdown = document.getElementById('pdfDropdown');
-    dropdown.classList.toggle('show');
-  });
+  document.addEventListener('DOMContentLoaded', function () {
+    const pdfBtn = document.querySelector('.pdf-dropdown-button');
+    if (!pdfBtn) return;
 
-  // Cerrar el dropdown si clic fuera de él
-  window.onclick = function(event) {
-    if (!event.target.matches('.pdf-dropdown-button')) {
-      const dropdowns = document.getElementsByClassName("pdf-dropdown");
-      for (let i = 0; i < dropdowns.length; i++) {
-        let openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show')) {
-          openDropdown.classList.remove('show');
-        }
+    pdfBtn.addEventListener('click', function () {
+      document.getElementById('pdfDropdown').classList.toggle('show');
+    });
+
+    window.addEventListener('click', function (event) {
+      if (!event.target.matches('.pdf-dropdown-button')) {
+        document.querySelectorAll('.pdf-dropdown.show').forEach(function (dropdown) {
+          dropdown.classList.remove('show');
+        });
       }
-    }
-  }
+    });
+  });
 </script>
 <!-- AOS JS -->
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
@@ -729,8 +752,6 @@ document.getElementById("kissButton").addEventListener("click", function() {
   <!--MODO NOCHE BOTÓN-->
 <button id="modoToggle" onclick="toggleNoche()" class="btn-volver modo-btn">🌙 Modo Noche</button>
 <p id="modo-msg" class="modo-msg">☀️ ¡Modo Día activo! Cambia a 🌙 para ver las estrellas.</p>
-<div id="estrellas"></div>
-<div id="nubes"></div>
 
 <!--FOOTER-->
 <footer class="love-footer">
@@ -986,6 +1007,42 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("modo-msg").textContent = "☀️ ¡Modo Día activo! Cambia a 🌙 para ver las estrellas.";
   }
 });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const navToggle = document.getElementById('navToggle');
+    const mainNav = document.getElementById('mainNav');
+    if (navToggle && mainNav) {
+      navToggle.addEventListener('click', function () {
+        const isOpen = mainNav.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        navToggle.textContent = isOpen ? '✕' : '☰';
+      });
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('{% url "service_worker" %}').catch(function () {});
+    }
+
+    let deferredPrompt;
+    const installBtn = document.getElementById('pwa-install-btn');
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) installBtn.hidden = false;
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener('click', async function () {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.hidden = true;
+      });
+    }
+  });
 </script>
 </body>
 </html>
